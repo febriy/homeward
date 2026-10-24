@@ -246,6 +246,83 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(self.view()['practice']['review_history'][0]['helped'],'Keep this reflection.')
 
 
+
+    def skill(self, who, action, **fields):
+        from skills import update_skill
+        return update_skill(self.store, who, dict(action=action,
+            version=self.store.view(who)['skill']['version'], **fields))['skill']
+
+    def completed_skill(self):
+        self.skill(self.a, 'save', fields={'meal_id': 'noodle-soup'})
+        self.skill(self.a, 'prepare')
+        self.skill(self.a, 'save', fields={'checks': dict(ingredients=True, time=True, help=True)})
+        self.skill(self.a, 'ready')
+        self.skill(self.a, 'tried')
+        self.skill(self.a, 'save', fields={'confidence': 'practising', 'note': 'PRIVATE SKILL NOTE'})
+        return self.skill(self.a, 'review')
+
+    def test_skill_independent_of_vision_and_new_sessions(self):
+        result = self.completed_skill()
+        self.assertEqual(result['xp'], 10)
+        self.assertFalse(self.view()['completed'])
+        self.store.new_session(self.a)
+        self.assertEqual(self.store.view(self.a)['skill']['history'], result['history'])
+        self.assertEqual(Sessions(self.database).view(self.a)['skill']['stage'], 'complete')
+
+    def test_skill_private_except_explicit_milestone(self):
+        self.completed_skill()
+        other = self.store.view(self.b)
+        self.assertEqual(other['skill']['xp'], 0)
+        self.assertNotIn('PRIVATE SKILL NOTE', json.dumps(other))
+        self.assertEqual(other['milestones'], [])
+        self.skill(self.a, 'share')
+        other = self.store.view(self.b)
+        self.assertEqual(other['milestones'], [{'name': 'Alice', 'label': 'Practised a dependable dinner'}])
+        self.assertNotIn('PRIVATE SKILL NOTE', json.dumps(other))
+        self.assertEqual(self.store.view(self.c)['milestones'], [])
+        self.skill(self.a, 'unshare')
+        self.assertEqual(self.store.view(self.b)['milestones'], [])
+
+    def test_skill_retries_and_stale_tabs_cannot_duplicate_xp(self):
+        from skills import update_skill
+        result = self.completed_skill()
+        with self.assertRaises(Problem):
+            update_skill(self.store, self.a, {'action': 'review', 'version': result['version'] - 1})
+        with self.assertRaises(Problem):
+            self.skill(self.a, 'review')
+        self.assertEqual(self.store.view(self.a)['skill']['xp'], 10)
+        result = self.skill(self.a, 'repeat')
+        self.assertFalse(any(result['checks'].values()))
+        self.assertEqual(result['note'], '')
+        self.assertEqual(len(result['history']), 1)
+        self.skill(self.a, 'save', fields={'checks': dict(ingredients=True, time=True, help=True)})
+        self.skill(self.a, 'ready'); self.skill(self.a, 'tried')
+        self.skill(self.a, 'save', fields={'confidence':'comfortable'})
+        self.assertEqual(self.skill(self.a, 'review')['xp'], 20)
+
+    def test_skill_readiness_validation_and_replanning(self):
+        with self.assertRaises(Problem): self.skill(self.a, 'review')
+        with self.assertRaises(Problem): self.skill(self.a, 'save', fields={'confidence':'comfortable'})
+        self.skill(self.a, 'save', fields={'meal_id':'custom', 'meal':''})
+        with self.assertRaises(Problem): self.skill(self.a, 'prepare')
+        self.skill(self.a, 'save', fields={'meal':'Rice and beans'})
+        self.skill(self.a, 'prepare')
+        with self.assertRaises(Problem): self.skill(self.a, 'ready')
+        with self.assertRaises(Problem): self.skill(self.a, 'save', fields={'checks':{'ingredients':'yes','time':True,'help':True}})
+        self.skill(self.a, 'save', fields={'checks':dict(ingredients=True,time=True,help=True)})
+        self.skill(self.a, 'ready')
+        with self.assertRaises(Problem): self.skill(self.a, 'save', fields={'meal_id':'eggs-toast'})
+        self.skill(self.a, 'reopen')
+        changed=self.skill(self.a, 'save', fields={'meal_id':'eggs-toast'})
+        self.assertFalse(any(changed['checks'].values()))
+        self.assertEqual(changed['meal'], 'Eggs & toast')
+        self.assertEqual(changed['stage'], 'choose')
+        self.skill(self.a, 'prepare')
+        self.skill(self.a, 'save', fields={'meal_id':'custom', 'meal':''})
+        self.assertEqual(self.store.view(self.a)['skill']['stage'], 'choose')
+        with self.assertRaises(Problem): self.skill(self.a, 'ready')
+
+
 class HttpTests(unittest.TestCase):
     def setUp(self):
         self.database=Database(DSN,'test_'+secrets.token_hex(8));self.database.migrate()

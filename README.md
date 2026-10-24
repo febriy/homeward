@@ -10,6 +10,8 @@ A working, guided workbook for couples: reflect privately, choose values and des
 
 Create your own profile and space. Give your partner the space code; they choose **Join your partner** and create a separate account. On a shared browser, sign out between people.
 
+The home screen now starts with **Make one dependable dinner**. Choose a pictured meal, complete three readiness checks, try it, and return for a private self-check. It works without a partner or a completed vision. Progress autosaves, each completed attempt earns 10 XP, and “My progress” keeps earlier attempts. You can explicitly share a milestone with your household; your notes, confidence and XP stay private. “Our values workbook” opens the original flow below.
+
 1. Save private reflections using five questions and optional prompts.
 2. Choose up to three values and three feelings, using editable examples or your own words.
 3. Explicitly check the cards you want to share. Discuss and each agree to shared priorities.
@@ -54,9 +56,10 @@ The cluster path must contain no spaces for this `pg_ctl -o` example. Set the lo
 
 ```sh
 .venv/bin/python -m unittest discover -s tests -v
-node --test tests/ui-regressions.cjs
+node --test tests/*.cjs
 node --check public/app.js
 node --check public/practice.js
+node --check public/skills.js
 ```
 
 Python tests require a real PostgreSQL database. They use `HOMEWARD_TEST_DATABASE_URL`, falling back to `DATABASE_URL` from `.env.local`. Each test creates and removes its own randomly named `test_*` schema. Use a dedicated development/test database whose role can create schemas.
@@ -78,6 +81,7 @@ Hosted verification covered health, actual browser account creation/join, privat
 ## Structure and limits
 
 - `core.py`: authenticated session behavior and ownership checks.
+- `skills.py`: account-scoped dinner skill, atomic versioned saves, private history and opt-in milestones.
 - `db.py`, `schema.sql`: PostgreSQL persistence, transactions and version checks.
 - `workbook.py`: authored reflection prompts, editable examples and a deterministic statement starter.
 - `server.py`, `api/handler.py`: shared local/hosted HTTP boundary.

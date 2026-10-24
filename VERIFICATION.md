@@ -46,3 +46,13 @@ Evidence: ignored `.local/hosted-results.txt`, `.local/deployment-tests.txt` and
 ## Public access check
 
 At the owner’s explicit request, Vercel Deployment Protection was disabled for this Homeward project. Fresh HTTP requests with no cookies or authorization headers returned 200 for the public page and `/api/health`, while `/api/state` returned 401 requiring a Homeward profile. The browser opened the stable branch URL to the first-run form. Screenshot: `.impeccable/review/public-homeward.png`.
+
+## Dinner micro-skill: continuity and local verification
+
+The autonomous dinner module extends the incumbent visual system. Source review of `public/skills.css`, `public/skills.js` and their shared styles confirms paper/forest colors, Georgia headings, native controls, flat 14 px meal surfaces and 8 px controls. Its centred 640 px task column uses 44 px desktop and 32 px phone headings, 48 px primary targets, open checklist rows and quiet footer navigation. The completion receipt respects reduced motion. All four existing meal rasters and their provenance sidecars are reused; no new rasters were introduced.
+
+The implementing agent opened and inspected `.impeccable/review/mini/desktop-meals.png` (1440 px wide), `user-meals.png` (1280 px), `phone-meals.png` (390 px), and the phone checklist, self-check, completion and progress captures. Local browser checks covered meal choice, preparation, immediate navigation and reload preserving checks and notes, self-check completion awarding 10 XP, history, repeat practice and the workbook link. **29 PostgreSQL-backed Python tests and 6 Node UI tests passed.**
+
+The finish review initially required correcting outdated product documentation; that correction received a final ship verdict. The single mechanical detector pass reported the intentionally retained cream palette. `DESIGN.md` remains unchanged; the previously recorded path, navigation and format drift is not repaired or canonized by this extension, and no design sidecar is introduced.
+
+These results concern local browser viewports and reported automated checks, not physical-device or comprehensive assistive-technology testing. Hosted verification of this micro-skill is pending; the earlier hosted evidence above covers the workbook release.

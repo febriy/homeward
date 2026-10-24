@@ -84,31 +84,33 @@ async function run(label, work) {
   notify(label, false, true);
   try { await work(); byId('notice').className=''; render(); }
   catch (error) { notify(error.message, true, true); }
-  finally { busy=false; app.setAttribute('aria-busy', 'false'); document.querySelectorAll('button,input,textarea,select').forEach(control => control.disabled = false); syncStatementApproval(); }
+  finally { busy=false; app.setAttribute('aria-busy', 'false'); document.querySelectorAll('button,input,textarea,select').forEach(control => control.disabled = false); syncStatementApproval(); if(typeof updateSkillReady==='function'&&state)updateSkillReady(); }
 }
 
-function go(next) {
-  if(next==='interview' && route==='home') {
+async function go(next) {
+  if(typeof flushSkill === 'function') { try { await flushSkill(); } catch(error) {notify(error.message,true,true);return;} }
+  if(next==='interview' && route==='workbook') {
     const pending=state.questions.findIndex((q,i)=>!personal().topics[String(i)]?.confirmed);
     topic=pending<0?0:pending;
   }
   if(next==='practice') practiceStep=null;
+  if(next==='home' && typeof skillPanel!=='undefined')skillPanel=null;
   route=next; render(); document.querySelector('#main-content')?.focus({preventScroll:true}); window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
 }
 
 function header() {
   const wordmark = '<span class="mark" aria-hidden="true"></span>Homeward';
-  return `<header class="topbar">${state?`<button class="brand" data-route="home" aria-label="Session overview">${wordmark}</button>`:`<div class="brand">${wordmark}</div>`}<div class="topright">${state ? `<span class="profile-name" title="${esc(state.user.name)}">${esc(state.user.name)}</span><button class="link" data-act="logout">Sign out</button>` : '<span class="hint">A conversation for two</span>'}</div></header>`;
+  return `<header class="topbar">${state?`<button class="brand" data-route="home" aria-label="Homeward home">${wordmark}</button>`:`<div class="brand">${wordmark}</div>`}<div class="topright">${state ? `<span class="profile-name" title="${esc(state.user.name)}">${esc(state.user.name)}</span><button class="link" data-act="logout">Sign out</button>` : '<span class="hint">Small steps for everyday life</span>'}</div></header>`;
 }
 
 function auth() {
   const create = authMode !== 'login';
-  return `${header()}<main class="auth-wrap" id="main-content" tabindex="-1"><section class="auth-story"><h1>A little clarity.<br>A home that<br>feels like you.</h1><p>Start with your own words. Find what matters to each of you, then decide what you want to stand for together.</p><div class="botanical" aria-hidden="true"><span></span><span></span><span></span></div><p class="auth-caption"><strong>Make room for what matters</strong>Think separately. Understand each other.<br>Choose your words together.</p></section><section class="auth-form"><div class="auth-tabs"><button data-auth="create" aria-pressed="${authMode==='create'}" class="${authMode==='create'?'active':''}">Start a space</button><button data-auth="join" aria-pressed="${authMode==='join'}" class="${authMode==='join'?'active':''}">Join your partner</button><button data-auth="login" aria-pressed="${authMode==='login'}" class="${authMode==='login'?'active':''}">Sign in</button></div><h2>${authMode==='join'?'Your own perspective.':create?'Begin with yourself.':'Welcome back.'}</h2><p class="hint">${create?'Create your own profile. You choose which thoughts to share.':'Your interview and saved choices will be here.'}</p><form data-form="auth"><div class="${create?'profile-fields':''}">${create?'<div class="field"><label for="name">Your first name</label><input id="name" name="name" required maxlength="40" autocomplete="given-name"></div>':''}<div class="field"><label for="handle">Username</label><input id="handle" name="handle" required minlength="3" maxlength="32" pattern="[a-zA-Z0-9_.-]+" autocomplete="username" placeholder="${create?'Choose a username':'Your username'}"></div></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" required minlength="12" maxlength="200" autocomplete="${create?'new-password':'current-password'}" placeholder="At least 12 characters"></div>${authMode==='join'?'<div class="field"><label for="invite">Your partner’s space code</label><input id="invite" name="invite" required maxlength="24" placeholder="Ask your partner for their code"></div>':authMode==='create'?'<div class="field"><label for="room_name">Name your space</label><input id="room_name" name="room_name" value="Our home" required maxlength="60"></div>':''}<button class="btn" type="submit">${authMode==='join'?'Join our space':create?'Create my private profile':'Open my space'} <span aria-hidden="true">${icons.arrow}</span></button></form><div class="footer-note">Your words, your choices. No AI.<br>Keep your password safe; password recovery is not available in this early version.</div></section></main>`;
+  return `${header()}<main class="auth-wrap" id="main-content" tabindex="-1"><section class="auth-story"><h1>Small steps.<br>A home that<br>feels like you.</h1><p>Start with one dependable dinner. Practise a little, see what helps, and grow from there.</p><div class="botanical" aria-hidden="true"><span></span><span></span><span></span></div><p class="auth-caption"><strong>Make room for what matters</strong>One small skill. A little real-life practice.<br>Your progress, at your pace.</p></section><section class="auth-form"><div class="auth-tabs"><button data-auth="create" aria-pressed="${authMode==='create'}" class="${authMode==='create'?'active':''}">Start a space</button><button data-auth="join" aria-pressed="${authMode==='join'}" class="${authMode==='join'?'active':''}">Join your partner</button><button data-auth="login" aria-pressed="${authMode==='login'}" class="${authMode==='login'?'active':''}">Sign in</button></div><h2>${authMode==='join'?'Your own perspective.':create?'Begin with yourself.':'Welcome back.'}</h2><p class="hint">${create?'Create your own profile. You choose which thoughts to share.':'Your practices, reflections and saved choices will be here.'}</p><form data-form="auth"><div class="${create?'profile-fields':''}">${create?'<div class="field"><label for="name">Your first name</label><input id="name" name="name" required maxlength="40" autocomplete="given-name"></div>':''}<div class="field"><label for="handle">Username</label><input id="handle" name="handle" required minlength="3" maxlength="32" pattern="[a-zA-Z0-9_.-]+" autocomplete="username" placeholder="${create?'Choose a username':'Your username'}"></div></div><div class="field"><label for="password">Password</label><input id="password" name="password" type="password" required minlength="12" maxlength="200" autocomplete="${create?'new-password':'current-password'}" placeholder="At least 12 characters"></div>${authMode==='join'?'<div class="field"><label for="invite">Your partner’s space code</label><input id="invite" name="invite" required maxlength="24" placeholder="Ask your partner for their code"></div>':authMode==='create'?'<div class="field"><label for="room_name">Name your space</label><input id="room_name" name="room_name" value="Our home" required maxlength="60"></div>':''}<button class="btn" type="submit">${authMode==='join'?'Join our space':create?'Create my private profile':'Open my space'} <span aria-hidden="true">${icons.arrow}</span></button></form><div class="footer-note">Your words, your choices. No AI.<br>Keep your password safe; password recovery is not available in this early version.</div></section></main>`;
 }
 
 function sidebar() {
   const steps = [['interview','Your own words'],['cards','Your priorities'],['together','Think together'],['statement','Our statement'],['practice','Our practice']];
-  return `<aside><div class="meta">${esc(state.room.name)}</div><nav class="nav" aria-label="Session steps">${steps.map(([id,label],i)=>`<button data-route="${id}" aria-current="${route===id || (route==='share' && id==='cards')?'step':'false'}" class="${route===id || (route==='share' && id==='cards')?'active':''}"><span class="num">${i+1}</span>${label}</button>`).join('')}</nav><button class="link" data-route="home">Session overview</button><div class="sidebar-bottom"><span class="meta">Your saved sessions</span><label class="sr-only" for="history">Open saved session</label><select id="history">${state.history.map(item=>`<option value="${esc(item.id)}" ${item.id===sess().id?'selected':''}>${esc(item.title)}</option>`).join('')}</select><button class="link" data-act="new">Start a new session</button><br><button class="link" data-act="export">Export my record</button><br><button class="link" data-act="refresh">Refresh shared work</button><p class="hint footer-note">The home we build, together.<br>Your work saves when you continue.</p></div></aside>`;
+  return `<aside><div class="meta">${esc(state.room.name)}</div><nav class="nav" aria-label="Session steps">${steps.map(([id,label],i)=>`<button data-route="${id}" aria-current="${route===id || (route==='share' && id==='cards')?'step':'false'}" class="${route===id || (route==='share' && id==='cards')?'active':''}"><span class="num">${i+1}</span>${label}</button>`).join('')}</nav><button class="link" data-route="home">My small practices</button><button class="link" data-route="workbook">Session overview</button><div class="sidebar-bottom"><span class="meta">Your saved sessions</span><label class="sr-only" for="history">Open saved session</label><select id="history">${state.history.map(item=>`<option value="${esc(item.id)}" ${item.id===sess().id?'selected':''}>${esc(item.title)}</option>`).join('')}</select><button class="link" data-act="new">Start a new session</button><br><button class="link" data-act="export">Export my record</button><br><button class="link" data-act="refresh">Refresh shared work</button><p class="hint footer-note">The home we build, together.<br>Your work saves when you continue.</p></div></aside>`;
 }
 
 function intro(kicker, title, detail) {
@@ -160,7 +162,8 @@ function statement() {
 
 function render() {
   if (!state) { app.innerHTML=auth(); bind(); return; }
-  const pages={home,interview,cards,share,together,statement,practice};
+  if(route==='home') { app.innerHTML=header()+skills();bind();bindSkills();return; }
+  const pages={workbook:home,interview,cards,share,together,statement,practice};
   const tools=`<details class="mobile-tools"><summary>Saved sessions & export</summary><label class="sr-only" for="mobile-history">Open saved session</label><select id="mobile-history">${state.history.map(item=>`<option value="${esc(item.id)}" ${item.id===sess().id?'selected':''}>${esc(item.title)}</option>`).join('')}</select><div class="actions"><button class="link" data-act="new">New session</button><button class="link" data-act="export">Export my record</button><button class="link" data-act="refresh">Refresh shared work</button></div></details>`;
   app.innerHTML=`${header()}<div class="shell">${sidebar()}<main class="content" id="main-content" tabindex="-1" data-page="${route}">${(pages[route]||home)()}${tools}</main></div>`;
   bind();
@@ -206,23 +209,24 @@ function bind() {
     event.preventDefault();
     const values=new FormData(form), body=Object.fromEntries(values);
     const kind=form.dataset.form;
-    if(kind==='auth') return run('Opening your space…',async()=>{state=await request(authMode==='login'?'/api/login':'/api/register',body);route='home';topic=0;});
+    if(kind==='auth') return run('Opening your space…',async()=>{state=await request(authMode==='login'?'/api/login':'/api/register',body);skillPanel=null;skillPending={};skillError='';route='home';topic=0;});
     if(kind==='answer') return run('Saving your private reflection…',()=>action('answer',{topic,answer:body.answer}));
     if(kind==='confirm') return run('Saving your meaning…',async()=>{await action('confirm',{topic,meaning:body.meaning});if(topic<4)topic++;else route='cards';});
     if(kind==='publish') return run('Sharing your chosen cards…',async()=>{await action('publish',{ids:values.getAll('share')});route='together';});
     if(kind==='draft') return run('Saving this revision…',()=>action('edit_draft',body));
   });
   document.querySelectorAll('[data-act]').forEach(button=>button.onclick=()=>handle(button.dataset.act));
-  document.querySelectorAll('#history,#mobile-history').forEach(select=>select.onchange=event=>run('Opening saved session…',async()=>{state=await request('/api/state?session='+event.target.value);route='home';topic=0;}));
+  document.querySelectorAll('#history,#mobile-history').forEach(select=>select.onchange=event=>run('Opening saved session…',async()=>{state=await request('/api/state?session='+event.target.value);route='workbook';topic=0;}));
 }
 
-function handle(name) {
-  if(name==='logout') return run('Signing out…',async()=>{await request('/api/logout',{});state=null;authMode='login';route='home';});
+async function handle(name) {
+  if(typeof flushSkill==='function') {try{await flushSkill();}catch(error){notify(error.message,true,true);return;}}
+  if(name==='logout') return run('Signing out…',async()=>{await request('/api/logout',{});state=null;authMode='login';route='home';skillPanel=null;skillPending={};skillError='';});
   if(name==='refresh') return run('Refreshing saved work…',async()=>{state=await request('/api/state?session='+sess().id);practiceStep=null;});
   if(name==='skip') { if(topic<4)topic++;else route='cards';render();return; }
   if(name==='new') {
     if(!confirm('Start a fresh session? This session will remain in your saved history.'))return;
-    return run('Starting a new session…',async()=>{state=await request('/api/new',{});route='home';topic=0;});
+    return run('Starting a new session…',async()=>{state=await request('/api/new',{});route='workbook';topic=0;});
   }
   if(name==='export') return run('Preparing your record…',async()=>{
     const record=await request('/api/export?session='+sess().id);

@@ -282,11 +282,14 @@ class Sessions:
         return sid
 
     def view(self, user, session_id=None):
+        from skills import read_skill, milestones
         session = self.load(user, session_id)
         data = session.pop('data')
         members = self.members(user['room'])
         users = [m['id'] for m in members]
         with self.connect() as db:
+            skill = read_skill(db, user)
+            shared_milestones = milestones(db, user)
             room = dict(db.execute('SELECT * FROM rooms WHERE id=%s', (user['room'],)).fetchone())
             history = [dict(row) for row in db.execute('SELECT id,title,created FROM sessions WHERE room=%s ORDER BY sequence DESC', (user['room'],))]
         session.update(private=data['interviews'][user['id']], published=public_cards(data),
@@ -296,6 +299,7 @@ class Sessions:
             session['practice']['vision_current'] = bool(data['completed'] and
                 session['practice']['source_hash'] == vision_hash(data, users))
         return {'user': user, 'room': room, 'members': members, 'session': session, 'history': history,
+                'skill': skill, 'milestones': shared_milestones,
                 'questions': [{'title': title, 'question': question, 'probe': probe} for title, question, probe in QUESTIONS],
                 'examples': EXAMPLES, 'meals': MEALS}
 

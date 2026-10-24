@@ -33,3 +33,7 @@ CREATE TABLE IF NOT EXISTS rate_limits (
     hits INTEGER NOT NULL,
     expires BIGINT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS skills (
+    user_id TEXT PRIMARY KEY REFERENCES users(id),
+    data TEXT NOT NULL
+);
