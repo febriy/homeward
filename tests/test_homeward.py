@@ -323,6 +323,81 @@ class SessionTests(unittest.TestCase):
         with self.assertRaises(Problem): self.skill(self.a, 'ready')
 
 
+class LearningTests(unittest.TestCase):
+    def setUp(self):
+        self.database = Database(DSN, 'test_' + secrets.token_hex(8))
+        self.database.migrate()
+        self.store = Sessions(self.database)
+        self.a = self.store.authenticate(self.store.guest())
+        self.b = self.store.authenticate(self.store.guest())
+
+    def tearDown(self):
+        with psycopg.connect(DSN) as db:
+            db.execute(sql.SQL('DROP SCHEMA {} CASCADE').format(sql.Identifier(self.database.schema)))
+
+    def save(self, **changes):
+        from lessons import update_learning
+        data = dict(action='finish', version=0, lesson_id='realistic-dinner', attempt='fictional-attempt-001',
+                    answers={'picture': 4, 'capacity': 6, 'prep': None}, note='A fictional test reflection.')
+        return update_learning(self.store, self.a, data | changes)['learning']
+
+    def test_snapshot_persists_privately_without_task_or_change_note(self):
+        saved = self.save(note='')
+        record = saved['history'][0]
+        self.assertEqual(record['answers']['picture'], 4)
+        self.assertIsNone(record['answers']['prep'])
+        self.assertEqual(record['note'], '')
+        self.assertIn('questions', record)
+        self.assertIn('saved_at', record)
+        self.assertEqual(saved['drafts'], {})
+        self.assertEqual(self.store.view(self.b)['learning']['history'], [])
+        partner = self.store.authenticate(self.store.register(dict(handle='partner', name='Partner', password=PASSWORD,
+                                         invite=self.store.view(self.a)['room']['invite'])))
+        self.assertEqual(self.store.view(partner)['learning']['history'], [])
+        self.store.new_session(self.a, 'Another season')
+        self.assertEqual(self.store.view(self.a)['learning']['history'], [record])
+        self.assertEqual(self.store.view(self.a)['skill']['xp'], 0)
+
+    def test_invalid_and_incomplete_ratings_do_not_become_results(self):
+        for invalid in (False, '5', 0, 11, 5.5, [], {}):
+            with self.subTest(value=invalid), self.assertRaises(Problem):
+                self.save(answers={'picture': invalid, 'capacity': 5, 'prep': 5})
+        with self.assertRaises(Problem):
+            self.save(answers={'picture': 5})
+        with self.assertRaises(Problem):
+            self.save(answers={'picture': 5, 'capacity': 5, 'prep': 5, 'unknown': 5})
+        self.assertEqual(self.store.view(self.a)['learning']['history'], [])
+
+    def test_partial_drafts_resume_and_stale_writes_preserve_saved_work(self):
+        draft = self.save(action='draft', answers={'picture': 3})
+        self.assertEqual(draft['drafts']['realistic-dinner']['answers'], {'picture': 3})
+        with self.assertRaises(Problem) as conflict:
+            self.save(action='draft', answers={'picture': 9})
+        self.assertEqual(conflict.exception.status, 409)
+        self.assertEqual(self.store.view(self.a)['learning'], draft)
+        done = self.save(version=1)
+        again = self.save(version=2, attempt='fictional-attempt-002', answers={'picture': 7, 'capacity': 8, 'prep': 6})
+        self.assertEqual(len(again['history']), 2)
+        self.assertEqual(again['history'][0], done['history'][0])
+
+    def test_concurrent_finish_and_lost_response_retry_create_one_snapshot(self):
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(lambda _: self.save(), range(2)))
+        self.assertEqual(results[0], results[1])
+        self.assertEqual(len(self.save()['history']), 1)
+        with self.assertRaises(Problem):
+            self.save(action='draft', note='Late changes must not silently disappear.')
+
+    def test_each_authored_lesson_can_save_its_own_reflection(self):
+        from lessons import LESSONS
+        for version, lesson in enumerate(LESSONS):
+            result = self.save(lesson_id=lesson['id'], version=version,
+                               attempt='fictional-attempt-%03d' % version,
+                               answers={key: None for key, label in lesson['questions']})
+            self.assertEqual(result['history'][-1]['title'], lesson['title'])
+        self.assertEqual(len(result['history']), len(LESSONS))
+
+
 class HttpTests(unittest.TestCase):
     def setUp(self):
         self.database=Database(DSN,'test_'+secrets.token_hex(8));self.database.migrate()
@@ -391,6 +466,22 @@ class HttpTests(unittest.TestCase):
         fresh=json.loads(fresh)
         self.assertTrue(fresh['user']['is_guest'])
         self.assertNotEqual(fresh['room']['id'],original['room']['id'])
+
+    def test_learning_http_preserves_cookie_profile_and_export_boundaries(self):
+        _, headers, payload = self.request('POST', '/api/guest', {})
+        state = json.loads(payload)
+        auth = {'Cookie': headers['Set-Cookie'].split(';')[0], 'X-Profile': state['user']['id']}
+        body = dict(action='finish', version=0, lesson_id='realistic-dinner', attempt='http-fictional-001',
+                    answers={'picture': 2, 'capacity': 4, 'prep': None}, note='Private HTTP reflection')
+        self.assertEqual(self.request('POST', '/api/learning', body)[0], 401)
+        self.assertEqual(self.request('POST', '/api/learning', body, auth | {'X-Profile': 'someone-else'})[0], 409)
+        self.assertEqual(self.request('POST', '/api/learning', body, auth | {'Origin': 'https://evil.example'})[0], 403)
+        self.assertEqual(self.request('POST', '/api/learning', body, auth)[0], 200)
+        code, _, exported = self.request('GET', '/api/export', headers=auth)
+        self.assertEqual(code, 200)
+        self.assertEqual(json.loads(exported)['learning']['history'][0]['note'], body['note'])
+        _, _, other = self.request('POST', '/api/guest', {})
+        self.assertEqual(json.loads(other)['learning']['history'], [])
 
     def test_hosted_cookie_is_secure_and_origin_is_explicit(self):
         secure=ThreadingHTTPServer(('127.0.0.1',0),make_handler(self.store,origins={'https://homeward.example'},hosted=True))

@@ -90,6 +90,7 @@ async function run(label, work) {
 }
 
 async function go(next) {
+  if(typeof flushLesson === 'function') { try { await flushLesson(); } catch(error) {notify(error.message,true,true);return;} }
   if(typeof flushSkill === 'function') { try { await flushSkill(); } catch(error) {notify(error.message,true,true);return;} }
   if(next==='interview' && route==='workbook') {
     const pending=state.questions.findIndex((q,i)=>!personal().topics[String(i)]?.confirmed);
@@ -97,6 +98,7 @@ async function go(next) {
   }
   if(next==='practice') practiceStep=null;
   if(next==='home' && typeof skillPanel!=='undefined')skillPanel=null;
+  if(next==='home' && typeof lessonView!=='undefined')lessonView.screen='library';
   route=next; render(); document.querySelector('#main-content')?.focus({preventScroll:true}); window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
 }
 
@@ -167,7 +169,8 @@ function render() {
     app.innerHTML=header()+'<main class="skill-work" id="main-content" tabindex="-1"><h1>Let’s open your space.</h1><p>Your connection may have paused. Try again to continue.</p><button class="btn" id="open-homeward">Try again</button></main>';
     byId('open-homeward').onclick=openHomeward; return;
   }
-  if(route==='home') { app.innerHTML=header()+skills();bind();bindSkills();return; }
+  if(route==='home') { app.innerHTML=header()+learning();bind();bindLearning();return; }
+  if(route==='legacy-skill') { app.innerHTML=header()+skills();bind();bindSkills();return; }
   const pages={workbook:home,interview,cards,share,together,statement,practice};
   const tools=`<details class="mobile-tools"><summary>Saved sessions & export</summary><label class="sr-only" for="mobile-history">Open saved session</label><select id="mobile-history">${state.history.map(item=>`<option value="${esc(item.id)}" ${item.id===sess().id?'selected':''}>${esc(item.title)}</option>`).join('')}</select><div class="actions"><button class="link" data-act="new">New session</button><button class="link" data-act="export">Export my record</button><button class="link" data-act="refresh">Refresh shared work</button></div></details>`;
   app.innerHTML=`${header()}<div class="shell">${sidebar()}<main class="content" id="main-content" tabindex="-1" data-page="${route}">${(pages[route]||home)()}${tools}</main></div>`;
@@ -248,7 +251,7 @@ async function openHomeward() {
   app.innerHTML=header()+'<main class="loading" id="main-content" tabindex="-1">Opening your space…</main>';
   try {
     state=await request('/api/guest',{});
-    route='home';skillPanel=null;skillPending={};skillError='';render();
+    route='home';skillPanel=null;skillPending={};skillError='';resetLearning();render();
   } catch(error) {state=null;render();notify(error.message,true,true);}
 }
 (async()=>{await openHomeward();})();

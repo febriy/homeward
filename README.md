@@ -2,15 +2,17 @@
 
 The home we build, together.
 
-A working, guided workbook for couples: reflect privately, choose values and desired feelings, agree on a shared vision, then try one practical dinner plan and review it together. No AI service is used.
+Short lessons for everyday family life: learn a small idea, reflect privately, and keep a dated snapshot. An optional values workbook helps couples agree on a shared vision. No AI service is used.
 
 ## Try it
 
 [Open the hosted preview](https://homeward-git-feat-no-ai-workbook-arvins-projects-318f977d.vercel.app). The preview is publicly accessible without a Vercel account. No login is needed: a separate guest space opens automatically and saves progress for this browser. Guest access lasts up to 30 days; clearing cookies starts a fresh space. This preview uses a dedicated Neon database in Singapore on its Free plan.
 
-Login and profile creation screens are currently bypassed for testing. Existing valid profiles still resume their saved records. The dinner skill works independently; the original shared workbook still requires two separate profiles for joint approvals.
+Login and profile creation screens are currently bypassed for testing. Existing valid profiles still resume their saved records. The micro-lessons work independently; the original shared workbook still requires two separate profiles for joint approvals.
 
-The home screen now starts with **Make one dependable dinner**. Choose a pictured meal, complete three readiness checks, try it, and return for a private self-check. It works without a partner or a completed vision. Progress autosaves, each completed attempt earns 10 XP, and “My progress” keeps earlier attempts. You can explicitly share a milestone with your household; your notes, confidence and XP stay private. “Our values workbook” opens the original flow below.
+The home screen offers four **micro-lessons**: conversation patterns, one realistic dinner, the hidden work before cooking, and familiar repeat meals. Read a short lesson, answer three or four personal 1–10 questions (or Not sure), optionally note something to change, then **Save & close**. Drafts autosave; dated records appear in **Your reflections**. There is no overall grade or mandatory task. Read-only use is welcome.
+
+The earlier dinner practice and its progress remain available to people who already started it. **Values workbook** opens the original couples flow:
 
 1. Save private reflections using five questions and optional prompts.
 2. Choose up to three values and three feelings, using editable examples or your own words.
@@ -60,6 +62,7 @@ node --test tests/*.cjs
 node --check public/app.js
 node --check public/practice.js
 node --check public/skills.js
+node --check public/lessons.js
 ```
 
 Python tests require a real PostgreSQL database. They use `HOMEWARD_TEST_DATABASE_URL`, falling back to `DATABASE_URL` from `.env.local`. Each test creates and removes its own randomly named `test_*` schema. Use a dedicated development/test database whose role can create schemas.
@@ -81,6 +84,7 @@ Hosted verification covered health, actual browser account creation/join, privat
 ## Structure and limits
 
 - `core.py`: authenticated session behavior and ownership checks.
+- `lessons.py`: authored lesson catalogue, private drafts and dated self-reflection snapshots.
 - `skills.py`: account-scoped dinner skill, atomic versioned saves, private history and opt-in milestones.
 - `db.py`, `schema.sql`: PostgreSQL persistence, transactions and version checks.
 - `workbook.py`: authored reflection prompts, editable examples and a deterministic statement starter.

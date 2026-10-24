@@ -101,7 +101,8 @@ def make_handler(store, origins=None, hosted=False):
                     return self.respond(state)
                 files = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css',
                          '/practice.js': 'practice.js', '/practice.css': 'practice.css',
-                         '/skills.js': 'skills.js', '/skills.css': 'skills.css'}
+                         '/skills.js': 'skills.js', '/skills.css': 'skills.css',
+                         '/lessons.js': 'lessons.js', '/lessons.css': 'lessons.css'}
                 for meal in ('tomato-pasta', 'rice-vegetables', 'noodle-soup', 'eggs-toast'):
                     files['/meals/' + meal + '.webp'] = 'meals/' + meal + '.webp'
                 if path not in files:
@@ -160,6 +161,9 @@ def make_handler(store, origins=None, hosted=False):
                 if path == '/api/skill':
                     from skills import update_skill
                     return self.respond(update_skill(store, user, body))
+                if path == '/api/learning':
+                    from lessons import update_learning
+                    return self.respond(update_learning(store, user, body))
                 if path == '/api/action':
                     return self.respond(store.act(user, body.get('action'), body))
                 raise Problem('Action not found.', 404)

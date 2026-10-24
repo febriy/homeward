@@ -295,12 +295,14 @@ class Sessions:
 
     def view(self, user, session_id=None):
         from skills import read_skill, milestones
+        from lessons import LESSONS, read_learning
         session = self.load(user, session_id)
         data = session.pop('data')
         members = self.members(user['room'])
         users = [m['id'] for m in members]
         with self.connect() as db:
             skill = read_skill(db, user)
+            learning = read_learning(db, user)
             shared_milestones = milestones(db, user)
             room = dict(db.execute('SELECT * FROM rooms WHERE id=%s', (user['room'],)).fetchone())
             history = [dict(row) for row in db.execute('SELECT id,title,created FROM sessions WHERE room=%s ORDER BY sequence DESC', (user['room'],))]
@@ -312,6 +314,7 @@ class Sessions:
                 session['practice']['source_hash'] == vision_hash(data, users))
         return {'user': user, 'room': room, 'members': members, 'session': session, 'history': history,
                 'skill': skill, 'milestones': shared_milestones,
+                'lessons': LESSONS, 'learning': learning,
                 'questions': [{'title': title, 'question': question, 'probe': probe} for title, question, probe in QUESTIONS],
                 'examples': EXAMPLES, 'meals': MEALS}
 
