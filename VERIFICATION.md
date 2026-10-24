@@ -55,4 +55,17 @@ The implementing agent opened and inspected `.impeccable/review/mini/desktop-mea
 
 The finish review initially required correcting outdated product documentation; that correction received a final ship verdict. The single mechanical detector pass reported the intentionally retained cream palette. `DESIGN.md` remains unchanged; the previously recorded path, navigation and format drift is not repaired or canonized by this extension, and no design sidecar is introduced.
 
-These results concern local browser viewports and reported automated checks, not physical-device or comprehensive assistive-technology testing. Hosted verification of this micro-skill is pending; the earlier hosted evidence above covers the workbook release.
+These results concern local browser viewports and reported automated checks, not physical-device or comprehensive assistive-technology testing. The hosted checks below supplement these local results; the earlier hosted evidence above covers the workbook release.
+
+
+## Dinner micro-skill: hosted verification
+
+Application commit `72a8842fc3f5749e735ae44b2dacb7f05b70ed9f`, deployment `dpl_FZXThabBzMbzAiaciW3osjU5DNw6`, READY on the existing preview project. Exact deployment: https://homeward-h4p86506j-arvins-projects-318f977d.vercel.app. The stable branch URL is unchanged. The additive skills-table migration ran on the configured Neon preview database before code deployment.
+
+- Hosted JavaScript and CSS matched the local files exactly.
+- Separate fictional Alex/Sam identities verified skill saving, fresh-login recovery, readiness, attempt/self-check completion, 10 XP, rejection of duplicate review credit, private partner/export isolation, deliberate milestone sharing and removal, and healthy no-AI API.
+- Browser on Vercel selected a meal for fictional Sam, saved one readiness check, navigated away and reloaded. The same meal and checked ingredient row returned, with Ready disabled until all three checks. Browser console showed no errors or warnings.
+- Additional 320 px local capture verified long custom meal wrapping without horizontal overflow. Editing a meal returns to selection; an incomplete custom name cannot advance after reload.
+- Independent finish reviewer scored documentation and final navigation/readiness guards resolved, disposition ship. Existing DESIGN.md and raster provenance were preserved.
+
+Evidence: `.local/verify-mini-hosted.py`, `.impeccable/review/mini/hosted-meals.png`, `hosted-checklist.png`, `small-phone-custom.png`. These contain fictional QA content. No production promotion or PR merge was performed.
