@@ -6,6 +6,37 @@ let authMode = 'create';
 let busy = false;
 let editing = null;
 let noticeTimer;
+const shareDrafts = new Map();
+function shareChoices() {
+  const key = `homeward-share:${myId()}:${sess().id}`;
+  if (!shareDrafts.has(key)) {
+    let saved = {};
+    try { saved = JSON.parse(sessionStorage.getItem(key) || '{}'); } catch {}
+    shareDrafts.set(key, saved && typeof saved === 'object' ? saved : {});
+  }
+  return {key, choices: shareDrafts.get(key)};
+}
+function shareChecked(id) {
+  const {choices} = shareChoices();
+  return Object.hasOwn(choices, id) ? choices[id] === true : personal().published.some(card => card.id === id);
+}
+function rememberShare(id, checked) {
+  const {key, choices} = shareChoices();
+  choices[id] = checked;
+  try { sessionStorage.setItem(key, JSON.stringify(choices)); } catch {}
+}
+function statementIsDirty() {
+  const editor = byId('draft-text');
+  return Boolean(editor && sess().draft && editor.value !== sess().draft.text);
+}
+function syncStatementApproval() {
+  const button = document.querySelector('[data-act="approve_draft"]');
+  if (!button) return;
+  const dirty = statementIsDirty();
+  button.disabled = busy || dirty;
+  const hint = byId('draft-unsaved');
+  if (hint) hint.hidden = !dirty;
+}
 const app = document.querySelector('#app');
 const dialog = document.querySelector('#editor');
 dialog.addEventListener('close', () => { document.querySelector('#edit-form').innerHTML=''; editing=null; });
@@ -53,7 +84,7 @@ async function run(label, work) {
   notify(label, false, true);
   try { await work(); byId('notice').className=''; render(); }
   catch (error) { notify(error.message, true, true); }
-  finally { busy=false; app.setAttribute('aria-busy', 'false'); document.querySelectorAll('button,input,textarea,select').forEach(control => control.disabled = false); }
+  finally { busy=false; app.setAttribute('aria-busy', 'false'); document.querySelectorAll('button,input,textarea,select').forEach(control => control.disabled = false); syncStatementApproval(); }
 }
 
 function go(next) {
@@ -105,7 +136,7 @@ function cards() {
 
 function share() {
   const selected=personal().cards.filter(c=>c.selected);
-  return `${intro('Choose what to share', 'Bring your meaning<br>to the conversation.', 'Your partner will see only the checked cards below: the word, your explanation, and its everyday expression. Your interview answers are not included.')}<form data-form="publish">${selected.map(card=>`<div class="share-row"><input type="checkbox" id="share-${card.id}" name="share" value="${card.id}" checked><div><label for="share-${card.id}">${esc(card.label)}</label><p>${esc(card.meaning)}</p>${card.example?`<p>${esc(card.example)}</p>`:''}<button type="button" class="link" data-edit="${card.id}">Edit before sharing</button></div></div>`).join('')||'<div class="empty">Choose your priorities first, then review them here.</div>'}<div class="actions"><button class="btn" type="submit">${personal().published.length?'Update shared cards':'Share checked cards'} ${icons.arrow}</button><button type="button" class="link" data-route="cards">Back to my priorities</button></div><p class="footer-note">Updating shared cards resets the shared proposals and their approvals, so both people can review the changed context.</p></form>`;
+  return `${intro('Choose what to share', 'Bring your meaning<br>to the conversation.', 'Your partner will see only the checked cards below: the word, your explanation, and its everyday expression. Your interview answers are not included.')}<form data-form="publish">${selected.map(card=>`<div class="share-row"><input type="checkbox" id="share-${card.id}" name="share" value="${card.id}" ${shareChecked(card.id)?'checked':''}><div><label for="share-${card.id}">${esc(card.label)}</label><p>${esc(card.meaning)}</p>${card.example?`<p>${esc(card.example)}</p>`:''}<button type="button" class="link" data-edit="${card.id}">Edit before sharing</button></div></div>`).join('')||'<div class="empty">Choose your priorities first, then review them here.</div>'}<div class="actions"><button class="btn" type="submit">${personal().published.length?'Update shared cards':'Share checked cards'} ${icons.arrow}</button><button type="button" class="link" data-route="cards">Back to my priorities</button></div><p class="footer-note">Updating shared cards resets the shared proposals and their approvals, so both people can review the changed context.</p></form>`;
 }
 
 function approvalBadges(item) {
@@ -124,7 +155,7 @@ function together() {
 
 function statement() {
   const draft=sess().draft;
-  return `${intro('Our statement', 'Words we can<br>both stand behind.', 'Start with your agreed words or write a statement together. Add how you want to live these values, then each approve the exact wording.')}<div class="actions"><button class="btn ${draft?'secondary':''}" data-act="template">${draft?'Reset to sentence starter':'Use our agreed words as a starter'} ${icons.arrow}</button><button class="link" data-route="together">Review our shared priorities</button></div>${draft?`<section class="statement"><div class="meta">${sess().completed?'Approved by both partners':'A draft for your consideration'} · revision ${draft.revision}</div><blockquote>${esc(draft.text)}</blockquote>${approvalBadges(draft)}</section><form data-form="draft"><label for="draft-text">Make the wording yours</label><textarea id="draft-text" name="text" maxlength="1200" required>${esc(draft.text)}</textarea><div class="actions"><button class="btn secondary" type="submit">Save revised wording</button><button class="btn" type="button" data-act="approve_draft">${draft.approvals[myId()]?`I have approved this ${icons.check}`:'I approve this exact wording'}</button></div></form><p class="footer-note">Changing the wording clears both approvals for the new revision. Each partner approves through their own profile.</p>`:`<div class="empty">Once you have both agreed on at least one shared value, you can use a sentence starter here. You can also write it yourselves.</div>${approved().some(c=>c.kind==='value')?'<form data-form="draft"><label for="draft-text">Write our own first draft</label><textarea id="draft-text" name="text" maxlength="1200" required placeholder="What do we hope to stand for together?"></textarea><div class="actions"><button class="btn secondary" type="submit">Save our wording</button></div></form>':''}`}<div class="section-head"><h2>What this statement draws on</h2></div><div class="grid">${approved().map(card=>`<article class="card"><h3>${esc(card.label)}</h3><span class="meta">${card.kind==='value'?'Value':'Desired feeling'}</span><p>${esc(card.meaning)}</p></article>`).join('')||'<div class="empty">No shared priorities have both approvals yet.</div>'}</div>${sess().completed?'<div class="note"><strong>A snapshot of this season.</strong><p>Your statement and the work behind it are saved. Start another session whenever you want to revisit what matters.</p><p><button class="btn" data-route="practice">Make this practical</button></p><button class="link" data-act="export">Export my session record</button> · <button class="link" data-act="new">Start a new session</button></div>':''}`;
+  return `${intro('Our statement', 'Words we can<br>both stand behind.', 'Start with your agreed words or write a statement together. Add how you want to live these values, then each approve the exact wording.')}<div class="actions"><button class="btn ${draft?'secondary':''}" data-act="template">${draft?'Reset to sentence starter':'Use our agreed words as a starter'} ${icons.arrow}</button><button class="link" data-route="together">Review our shared priorities</button></div>${draft?`<section class="statement"><div class="meta">${sess().completed?'Approved by both partners':'A draft for your consideration'} · revision ${draft.revision}</div><blockquote>${esc(draft.text)}</blockquote>${approvalBadges(draft)}</section><form data-form="draft"><label for="draft-text">Make the wording yours</label><textarea id="draft-text" name="text" maxlength="1200" required>${esc(draft.text)}</textarea><p id="draft-unsaved" class="hint" role="status" hidden>Save your revised wording before approving it.</p><div class="actions"><button class="btn secondary" type="submit">Save revised wording</button><button class="btn" type="button" data-act="approve_draft">${draft.approvals[myId()]?`I have approved this ${icons.check}`:'I approve this exact wording'}</button></div></form><p class="footer-note">Changing the wording clears both approvals for the new revision. Each partner approves through their own profile.</p>`:`<div class="empty">Once you have both agreed on at least one shared value, you can use a sentence starter here. You can also write it yourselves.</div>${approved().some(c=>c.kind==='value')?'<form data-form="draft"><label for="draft-text">Write our own first draft</label><textarea id="draft-text" name="text" maxlength="1200" required placeholder="What do we hope to stand for together?"></textarea><div class="actions"><button class="btn secondary" type="submit">Save our wording</button></div></form>':''}`}<div class="section-head"><h2>What this statement draws on</h2></div><div class="grid">${approved().map(card=>`<article class="card"><h3>${esc(card.label)}</h3><span class="meta">${card.kind==='value'?'Value':'Desired feeling'}</span><p>${esc(card.meaning)}</p></article>`).join('')||'<div class="empty">No shared priorities have both approvals yet.</div>'}</div>${sess().completed?'<div class="note"><strong>A snapshot of this season.</strong><p>Your statement and the work behind it are saved. Start another session whenever you want to revisit what matters.</p><p><button class="btn" data-route="practice">Make this practical</button></p><button class="link" data-act="export">Export my session record</button> · <button class="link" data-act="new">Start a new session</button></div>':''}`;
 }
 
 function render() {
@@ -154,6 +185,9 @@ function openEditor(id, shared=false) {
 }
 
 function bind() {
+  document.querySelectorAll('[name="share"]').forEach(input => input.onchange=()=>rememberShare(input.value,input.checked));
+  if (byId('draft-text')) byId('draft-text').oninput=syncStatementApproval;
+  syncStatementApproval();
   document.querySelectorAll('[data-auth]').forEach(button=>button.onclick=()=>{authMode=button.dataset.auth;render();});
   document.querySelectorAll('[data-route]').forEach(button=>button.onclick=()=>go(button.dataset.route));
   document.querySelectorAll('[data-topic]').forEach(button=>button.onclick=()=>{topic=Number(button.dataset.topic);render();});
@@ -184,7 +218,7 @@ function bind() {
 
 function handle(name) {
   if(name==='logout') return run('Signing out…',async()=>{await request('/api/logout',{});state=null;authMode='login';route='home';});
-  if(name==='refresh') return run('Refreshing saved work…',async()=>{state=await request('/api/state?session='+sess().id);});
+  if(name==='refresh') return run('Refreshing saved work…',async()=>{state=await request('/api/state?session='+sess().id);practiceStep=null;});
   if(name==='skip') { if(topic<4)topic++;else route='cards';render();return; }
   if(name==='new') {
     if(!confirm('Start a fresh session? This session will remain in your saved history.'))return;
@@ -196,6 +230,7 @@ function handle(name) {
     const link=document.createElement('a');link.href=url;link.download='homeward-'+new Date(sess().created).toISOString().slice(0,10)+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   });
   if(name==='template' && sess().draft && !confirm('Replace this draft with the sentence starter? Your current wording stays in revision history.')) return;
+  if(name==='approve_draft' && statementIsDirty()) { notify('Save your revised wording before approving it.',true); return; }
   const labels={template:'Preparing the sentence starter…',approve_draft:'Saving your approval…'};
   if(labels[name]) return run(labels[name],()=>action(name));
 }

@@ -31,6 +31,9 @@ function reviewText(review) {
 function practice() {
   if(!sess().completed)return `${intro('Our practice', 'Give this a shared direction.', 'First, agree on your family statement. Then choose one part to put into practice.')}<button class="btn" data-route="statement">Go to our statement ${icons.arrow}</button>`;
   const p=sess().practice, f=p?.fields||{};
+  if ((practiceStep==='review-agreement' && !p?.review_draft) ||
+      (practiceStep==='review' && p?.status!=='active') ||
+      (['overview','approve'].includes(practiceStep) && !p)) practiceStep=null;
   const step=practiceStep||nextPracticeStep();
   const titles={focus:['What matters this week?','Choose one part of your vision to bring into an ordinary dinner.'],meal:['What sounds familiar?','Pick something you already know how to make. You can adapt it to your family.'],timing:['When could this fit?','Choose one evening in the week you actually have.'],roles:['Who takes care of what?','Include the noticing and preparation, as well as what happens at dinner.'],support:['What if the evening gets difficult?','An easier option gives you room to adapt. Choose when you’ll check in, too.'],approve:['Does this work for both of you?','Read the plan together. Each person agrees through their own profile.'],overview:['Our plan this week.','One shared experiment. Give it room in real life, then talk about what you noticed.'],review:['What did you notice?','Did this help your home feel the way you hoped? Write a review together.'],'review-agreement':['Do we agree on what comes next?','Read your reflection and next step. Each person confirms through their own profile.']};
   let content='';

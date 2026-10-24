@@ -2,9 +2,86 @@
 
 The home we build, together.
 
-A guided workbook for couples: reflect privately, choose values and desired feelings, agree on a shared vision, and turn it into one practical dinner plan and a weekly review. No AI service is used.
+A working, guided workbook for couples: reflect privately, choose values and desired feelings, agree on a shared vision, then try one practical dinner plan and review it together. No AI service is used.
 
-This repository is the product source. The earlier local pilot and fictional screen prototype remain in the separate Software Factory workspace.
+## Try it
 
-Implementation, setup and verification details will be recorded alongside the first working build.
+Create your own profile and space. Give your partner the space code; they choose **Join your partner** and create a separate account. On a shared browser, sign out between people.
 
+1. Save private reflections using five questions and optional prompts.
+2. Choose up to three values and three feelings, using editable examples or your own words.
+3. Explicitly check the cards you want to share. Discuss and each agree to shared priorities.
+4. Write a statement or edit a sentence starter. Save the wording before each person approves it.
+5. Choose a pictured meal or your own, plan timing and responsibilities, and agree on a fallback and review date. Both people approve the plan and its weekly review.
+
+Saved sessions, plan revisions and completed reviews remain available. Export includes your private reflections and the shared record, never your partner’s private interview. Use **Refresh shared work** to fetch your partner’s latest changes.
+
+## Local setup
+
+Requires Python 3.12+, PostgreSQL 15+ and, for the small UI regression suite, Node.js 22+. The application has no JavaScript build step.
+
+```sh
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+cp .env.example .env.local
+```
+
+Create a dedicated PostgreSQL database, then edit `DATABASE_URL` in `.env.local` to its connection string. The application creates tables in the `homeward` schema; it never substitutes a mock or file database. Keep credentials out of Git.
+
+```sh
+.venv/bin/python scripts/migrate.py
+.venv/bin/python server.py --port 8791
+```
+
+Open http://127.0.0.1:8791. Development binds to localhost. Data lives in PostgreSQL and survives application restarts.
+
+For a separate local Homebrew PostgreSQL cluster, the following creates a Unix-socket-only server without touching an existing cluster. Run `initdb` only for a new empty directory; retain `.local/postgres` to keep saved work.
+
+```sh
+brew install postgresql@15
+mkdir -p .local
+chmod 700 .local
+/opt/homebrew/opt/postgresql@15/bin/initdb -D "$PWD/.local/postgres" --auth-local=trust --auth-host=scram-sha-256
+/opt/homebrew/opt/postgresql@15/bin/pg_ctl -D "$PWD/.local/postgres" -l "$PWD/.local/postgres.log" -o "-p 55439 -k $PWD/.local -c listen_addresses=''" start
+/opt/homebrew/opt/postgresql@15/bin/createdb -h "$PWD/.local" -p 55439 homeward
+```
+
+The cluster path must contain no spaces for this `pg_ctl -o` example. Set the local connection string to `postgresql:///homeward?host=/absolute/path/to/checkout/.local&port=55439`. For Homebrew on Intel Macs, replace `/opt/homebrew` with `/usr/local`.
+
+## Checks
+
+```sh
+.venv/bin/python -m unittest discover -s tests -v
+node --test tests/ui-regressions.cjs
+node --check public/app.js
+node --check public/practice.js
+```
+
+Python tests require a real PostgreSQL database. They use `HOMEWARD_TEST_DATABASE_URL`, falling back to `DATABASE_URL` from `.env.local`. Each test creates and removes its own randomly named `test_*` schema. Use a dedicated development/test database whose role can create schemas.
+
+See [VERIFICATION.md](VERIFICATION.md) for observed results and limitations.
+
+## Vercel deployment
+
+The repository includes a Python function entry point, static assets and routing configuration. Hosting is prepared but has **not been deployed or verified**. The Vercel connector currently needs a grant for the owner’s team.
+
+Once access is granted:
+
+1. Create a Homeward Vercel project connected to this repository and a dedicated managed PostgreSQL database. Keep preview and production data separate.
+2. Set `DATABASE_URL` as a secret for each intended environment. Use the provider’s TLS-enabled connection string. Set `APP_ORIGIN` to the exact public origin, with no trailing slash. The deployment’s own `VERCEL_URL` is also accepted.
+3. Run `scripts/migrate.py` against that environment before sending traffic. Migrations are explicit; requests do not create tables.
+4. Deploy and verify `/api/health`, registration, two independent profiles, privacy, persistence across requests, approval invalidation and the complete practice/review journey on the actual hosted URL.
+
+A local test pass does not verify Vercel routing, runtime packaging, proxy headers, environment bindings or the managed database. Never use local database files for Vercel persistence.
+
+## Structure and limits
+
+- `core.py`: authenticated session behavior and ownership checks.
+- `db.py`, `schema.sql`: PostgreSQL persistence, transactions and version checks.
+- `workbook.py`: authored reflection prompts, editable examples and a deterministic statement starter.
+- `server.py`, `api/handler.py`: shared local/hosted HTTP boundary.
+- `public/`: buildless browser UI and four meal illustrations.
+
+This is an early couples release. There is no password recovery, email verification, invitation renewal UI, automatic reminder, calendar integration, payment or subscription. Keep your password safe. Sharing is deliberate, but private reflections are not end-to-end encrypted: the application/database operator can access stored data. Public launch still requires operational backup/restore, account recovery and retention/deletion procedures.
+
+Meal illustrations were generated during design; prompts and provenance are in `docs/assets/` and adjacent asset sidecars. The running application makes no model calls. The original workbook PDF, personal records, credentials and earlier Software Factory pilot are not in this repository.
