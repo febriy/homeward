@@ -6,6 +6,8 @@ A working, guided workbook for couples: reflect privately, choose values and des
 
 ## Try it
 
+[Open the hosted preview](https://homeward-git-feat-no-ai-workbook-arvins-projects-318f977d.vercel.app). Vercel Deployment Protection remains enabled; use the owner’s Vercel account if prompted. This preview uses a dedicated Neon database in Singapore on its Free plan.
+
 Create your own profile and space. Give your partner the space code; they choose **Join your partner** and create a separate account. On a shared browser, sign out between people.
 
 1. Save private reflections using five questions and optional prompts.
@@ -63,16 +65,15 @@ See [VERIFICATION.md](VERIFICATION.md) for observed results and limitations.
 
 ## Vercel deployment
 
-The repository includes a Python function entry point, static assets and routing configuration. Hosting is prepared but has **not been deployed or verified**. The Vercel connector currently needs a grant for the owner’s team.
+The Git-connected Vercel project is `homeward` in `arvins-projects-318f977d`. The feature branch `feat/no-ai-workbook` deploys to the preview linked above. The pull request remains unmerged; production is not released.
 
-Once access is granted:
+The preview has a dedicated `homeward-preview` Neon database, with the database and function in Singapore. The integration provides `DATABASE_URL` for preview. `APP_ORIGIN` allows the exact branch-preview origin; the deployment's own `VERCEL_URL` is also accepted. Secrets remain in Vercel and ignored local environment files.
 
-1. Create a Homeward Vercel project connected to this repository and a dedicated managed PostgreSQL database. Keep preview and production data separate.
-2. Set `DATABASE_URL` as a secret for each intended environment. Use the provider’s TLS-enabled connection string. Set `APP_ORIGIN` to the exact public origin, with no trailing slash. The deployment’s own `VERCEL_URL` is also accepted.
-3. Run `scripts/migrate.py` against that environment before sending traffic. Migrations are explicit; requests do not create tables.
-4. Deploy and verify `/api/health`, registration, two independent profiles, privacy, persistence across requests, approval invalidation and the complete practice/review journey on the actual hosted URL.
+For subsequent schema changes, load the target environment deliberately and run `scripts/migrate.py` before serving traffic. It prefers `DATABASE_URL_UNPOOLED` for migrations and falls back to `DATABASE_URL` for ordinary PostgreSQL setups. The running app uses pooled connections. Migrations are explicit; requests do not create tables.
 
-A local test pass does not verify Vercel routing, runtime packaging, proxy headers, environment bindings or the managed database. Never use local database files for Vercel persistence.
+For a future production release, create a separate database and production environment variables, run migrations, deploy a reviewed commit, and verify the complete hosted flow before promoting it. Do not connect production to the test database or use local database files for Vercel persistence.
+
+Hosted verification covered health, actual browser account creation/join, private reflection saving, and the API journey through both approvals and a completed review, then a browser reload showing the saved result. See [VERIFICATION.md](VERIFICATION.md).
 
 ## Structure and limits
 

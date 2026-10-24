@@ -16,4 +16,4 @@ Test against real PostgreSQL: account/session authentication, two-person members
 
 ## Deployment
 
-Target repository: https://github.com/febriy/homeward (initially empty/public). Target Vercel team returned by the account: `team_M4iJwTyS8ArbIEjukm4OZQ7X` (`arvins-projects-318f977d`). The connector currently requires the user to grant team access. No paid plan or database upgrade is authorized. Prepare the complete implementation while account access is pending, then provision and verify the hosted path when access permits. Source review is via a feature branch and pull request; no automatic PR merge.
+Target repository: https://github.com/febriy/homeward (initially empty/public). Target Vercel team returned by the account: `team_M4iJwTyS8ArbIEjukm4OZQ7X` (`arvins-projects-318f977d`). The owner granted connector team access; a protected preview is deployed with a dedicated Neon database. No paid plan or database upgrade is authorized. The hosted path has been verified; see VERIFICATION.md. Production remains outside the completed preview release. Source review is via a feature branch and pull request; no automatic PR merge.

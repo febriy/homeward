@@ -27,6 +27,18 @@ The documenter compared `DESIGN.md`, `PRODUCT.md`, the approved build scope, `pu
 
 Source sampling also found a pre-existing text check glyph in the reflection question navigation, present in `HEAD`; this is not canonized as an icon rule or repaired in this documentation pass.
 
-## Pending hosted verification
+## Hosted preview verification
 
-No hosted deployment, managed database or Vercel runtime check has been completed. Account identity is readable, but the connector’s team-scoped request returned HTTP 403 for missing team access. The owner’s grant is required before provisioning and hosted testing. Local success must not be described as a successful Vercel deployment.
+Deployed from `feat/no-ai-workbook` to Vercel project `homeward` in `arvins-projects-318f977d`, using a dedicated Neon Free database named `homeward-preview`. Function and database are in Singapore. Deployment Protection remains enabled. No production release or PR merge has happened.
+
+Verified application commit: `766d49b`. Deployment: `dpl_5KvieBGbCNLMLYytKtFdjcrp3YG1`, READY. Exact tested URL: https://homeward-qc20dhlie-arvins-projects-318f977d.vercel.app. Stable branch URL: https://homeward-git-feat-no-ai-workbook-arvins-projects-318f977d.vercel.app.
+
+- Vercel discovery rejected the factory-assigned Python handler. An explicit top-level handler class fixed discovery; the API rewrite was narrowed to the app's single-segment endpoints. The full 25-test PostgreSQL suite passed again after these deployment edits.
+- Schema migration succeeded over the integration’s direct connection; pooled runtime queries succeeded. Local database configuration was preserved.
+- Hosted `/api/health` returned HTTP 200 and `{"ok":true,"ai":false}`.
+- Browser: created fictional Alex’s account and private reflection, then joined fictional Sam with the invite code. Sam's interview was empty and separate.
+- Authenticated HTTP checks, using separate cookies per person: Secure session cookie; private interview/export isolation; reviewed publication; shared priorities; independent statement approval; plan persistence; approval invalidation after a plan edit; independent plan approval; review approval by both; refreshed review history. All passed.
+- Browser reloaded Sam's profile and rendered the saved dinner plan plus completed review from the hosted database. Signed out afterward, leaving the first-run form ready for the owner.
+- The deployment uses live hosted persistence, with fictional QA data only. No original workbook records or local user records were uploaded.
+
+Evidence: ignored `.local/hosted-results.txt`, `.local/deployment-tests.txt` and `.impeccable/review/hosted-plan.png`. Hosted checks supplement the earlier local browser walkthrough; they are not a load test or public-launch readiness certification.
