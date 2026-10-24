@@ -1,0 +1,13 @@
+.local/
+.data/
+.venv/
+.env
+.env.*
+!.env.example
+.vercel/
+.impeccable/review/
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+
