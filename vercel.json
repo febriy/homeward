@@ -3,11 +3,35 @@
   "framework": null,
   "buildCommand": "",
   "outputDirectory": "public",
-  "rewrites": [{"source": "/api/:path*", "destination": "/api/handler?route=:path*"}],
-  "functions": {"api/handler.py": {"maxDuration": 30, "excludeFiles": "{.local/**,.venv/**,tests/**,docs/**,.env*,.git/**,.impeccable/**}"}},
-  "headers": [{"source": "/(.*)", "headers": [
-    {"key": "X-Content-Type-Options", "value": "nosniff"},
-    {"key": "Referrer-Policy", "value": "no-referrer"},
-    {"key": "Content-Security-Policy", "value": "default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"}
-  ]}]
+  "rewrites": [
+    {
+      "source": "/api/:route",
+      "destination": "/api/handler?route=:route"
+    }
+  ],
+  "functions": {
+    "api/handler.py": {
+      "maxDuration": 30,
+      "excludeFiles": "{.local/**,.venv/**,tests/**,docs/**,.env*,.git/**,.impeccable/**,.agents/**,skills-lock.json}"
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+        }
+      ]
+    }
+  ]
 }

@@ -8,5 +8,5 @@ from dotenv import load_dotenv
 from db import Database
 
 load_dotenv(Path(__file__).resolve().parents[1] / '.env.local')
-Database(os.environ.get('DATABASE_URL')).migrate()
+Database(os.environ.get('DATABASE_URL_UNPOOLED') or os.environ.get('DATABASE_URL')).migrate()
 print('Homeward schema is ready.')
