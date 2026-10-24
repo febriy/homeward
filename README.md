@@ -12,6 +12,8 @@ Login and profile creation screens are currently bypassed for testing. Existing 
 
 The home screen is a learning dashboard with **three modules and XP**. Start **Talk without blame**, **Make dinner manageable**, or **Find what matters**. Each module has six small screens: idea, quiz, idea, quiz, personal reflection and optional note. Quizzes explain the answer; personal ratings are not graded. Earn 10 XP once per new step (60 per module), save and leave at any time, and resume where you stopped. Revisiting saves another reflection without duplicating XP.
 
+**Practices** adds two concrete activities: **Prep one meal ahead** and **Check in over dinner**. Read the steps, choose a small action, and choose an event or time as your cue. Save the plan, try it in your day, then record what happened. Planning does not count as doing; a first recorded try earns 20 XP, even if you want to adjust it. Next and Save & leave save practice answers. The app does not send reminders. Repeat plans preserve earlier records.
+
 Earlier micro-lessons, reflections and dinner-practice records remain accessible to people who already have them. **Values workbook** opens the original couples flow:
 
 1. Save private reflections using five questions and optional prompts.

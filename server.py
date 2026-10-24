@@ -103,7 +103,8 @@ def make_handler(store, origins=None, hosted=False):
                          '/practice.js': 'practice.js', '/practice.css': 'practice.css',
                          '/skills.js': 'skills.js', '/skills.css': 'skills.css',
                          '/lessons.js': 'lessons.js', '/lessons.css': 'lessons.css'}
-                files.update({'/modules.js': 'modules.js', '/modules.css': 'modules.css'})
+                files.update({'/modules.js': 'modules.js', '/modules.css': 'modules.css',
+                              '/activities.js': 'activities.js', '/activities.css': 'activities.css'})
                 for meal in ('tomato-pasta', 'rice-vegetables', 'noodle-soup', 'eggs-toast'):
                     files['/meals/' + meal + '.webp'] = 'meals/' + meal + '.webp'
                 if path not in files:
@@ -165,6 +166,9 @@ def make_handler(store, origins=None, hosted=False):
                 if path == '/api/learning':
                     from lessons import update_learning
                     return self.respond(update_learning(store, user, body))
+                if path == '/api/activity':
+                    from activities import update_activity
+                    return self.respond(update_activity(store, user, body))
                 if path == '/api/module':
                     from modules import update_module
                     return self.respond(update_module(store, user, body))

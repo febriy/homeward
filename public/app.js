@@ -90,6 +90,7 @@ async function run(label, work) {
 }
 
 async function go(next) {
+  if(typeof flushActivity === 'function') { try { await flushActivity(); } catch(error) {notify(error.message,true,true);return;} }
   if(typeof flushModule === 'function') { try { await flushModule(); } catch(error) {notify(error.message,true,true);return;} }
   if(typeof flushLesson === 'function') { try { await flushLesson(); } catch(error) {notify(error.message,true,true);return;} }
   if(typeof flushSkill === 'function') { try { await flushSkill(); } catch(error) {notify(error.message,true,true);return;} }
@@ -101,6 +102,7 @@ async function go(next) {
   if(next==='home' && typeof skillPanel!=='undefined')skillPanel=null;
   if(next==='home' && typeof lessonView!=='undefined')lessonView.screen='library';
   if(next==='home' && typeof moduleView!=='undefined')moduleView.screen='dashboard';
+  if(next==='practices')activityView={screen:'library',id:null,record:null};
   route=next; render(); document.querySelector('#main-content')?.focus({preventScroll:true}); window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
 }
 
@@ -172,6 +174,7 @@ function render() {
     byId('open-homeward').onclick=openHomeward; return;
   }
   if(route==='home') { app.innerHTML=header()+modulesHome();bind();bindModules();return; }
+  if(route==='practices') { app.innerHTML=header()+activitiesHome();bind();bindActivities();return; }
   if(route==='legacy-learning') { app.innerHTML=header()+learning();bind();bindLearning();return; }
   if(route==='legacy-skill') { app.innerHTML=header()+skills();bind();bindSkills();return; }
   const pages={workbook:home,interview,cards,share,together,statement,practice};
@@ -254,7 +257,7 @@ async function openHomeward() {
   app.innerHTML=header()+'<main class="loading" id="main-content" tabindex="-1">Opening your space…</main>';
   try {
     state=await request('/api/guest',{});
-    route='home';skillPanel=null;skillPending={};skillError='';resetLearning();resetModules();render();
+    route='home';skillPanel=null;skillPending={};skillError='';resetLearning();resetModules();resetActivities();render();
   } catch(error) {state=null;render();notify(error.message,true,true);}
 }
 (async()=>{await openHomeward();})();

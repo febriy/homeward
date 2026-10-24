@@ -5,7 +5,7 @@ let moduleWorking=false, moduleError='', moduleFailed=null;
 let moduleRecovery=null;
 const moduleById=id=>state.modules.find(m=>m.id===id);
 const moduleProgress=id=>state.learning.modules?.[id];
-const learningXP=()=>Object.values(state.learning.modules||{}).reduce((sum,p)=>sum+p.awarded.length*10,0);
+const learningXP=()=>Object.values(state.learning.modules||{}).reduce((sum,p)=>sum+p.awarded.length*10,0)+Object.values(state.learning.activities||{}).filter(p=>p.awarded).length*20;
 const moduleSymbols={
  talk:'<path d="M6 7h19a4 4 0 0 1 4 4v9a4 4 0 0 1-4 4H15l-7 6v-6H6a4 4 0 0 1-4-4v-9a4 4 0 0 1 4-4Z"/><path d="M10 13h11m-11 5h7"/>',
  meal:'<circle cx="18" cy="18" r="12"/><circle cx="18" cy="18" r="7"/><path d="M1 6v11m4-11v11M1 12h4m-2 5v14m31-25v25"/>',
@@ -55,10 +55,10 @@ function moduleFooter(){
 }
 function moduleDashboard(){
  const completed=state.modules.filter(m=>moduleProgress(m.id)?.history.length).length;
- return `<main class="module-dashboard" id="main-content" tabindex="-1"><div class="dashboard-heading"><div><h1>Small steps for a<br>home that feels like you.</h1><p>Pick a module. Learn a little. Find your next step.</p></div><div class="learning-summary"><strong>${learningXP()} <span>XP</span></strong><span>Learning experience</span><p>${completed} of ${state.modules.length} modules completed</p></div></div><div class="module-grid">${state.modules.map(m=>{
+ return `<main class="module-dashboard" id="main-content" tabindex="-1"><div class="dashboard-heading"><div><h1>Small steps for a<br>home that feels like you.</h1><p>Pick a module. Learn a little. Find your next step.</p></div><div class="learning-summary"><strong>${learningXP()} <span>XP</span></strong><span>Learning & practice</span><p>${completed} of ${state.modules.length} modules completed</p></div></div>${learningNavigation('home')}${activityReadyLink()}<div class="module-grid">${state.modules.map(m=>{
  const p=moduleProgress(m.id),started=p&&!p.completed,done=Boolean(p?.history.length),count=p?.furthest||0;
  return `<article class="module-card">${moduleSymbol(m.symbol)}<h2>${esc(m.title)}</h2><p class="module-description">${esc(m.description)}</p><p class="module-meta">${esc(m.category)} · About ${m.minutes} minutes</p><div class="module-progress-label"><span>${started?`${count} of ${m.steps.length} steps${done?' · Revisiting':''}`:done?'Completed':`${m.steps.length} small steps`}</span><span>${p?.awarded.length?`${p.awarded.length*10} XP earned`:'Earn 60 XP'}</span></div><progress max="${m.steps.length}" value="${p?.completed?m.steps.length:count}" aria-label="${esc(m.title)} progress"></progress><button class="btn ${done&&!started?'secondary':''}" data-start-module="${m.id}">${started?'Continue module':done?'Revisit module':'Start module'} ${icons.arrow}</button></article>`;
- }).join('')}</div><p class="xp-explanation">Earn 10 XP for each new step. Your personal ratings never change the reward.</p>${moduleErrorPanel()}${moduleFooter()}</main>`;
+ }).join('')}</div><p class="xp-explanation">Earn 10 XP for each new lesson step. Practices earn 20 XP on the first recorded try. Personal ratings never change the reward.</p>${moduleErrorPanel()}${moduleFooter()}</main>`;
 }
 function moduleHistory(){
  const records=Object.values(state.learning.modules||{}).flatMap(p=>p.history).sort((a,b)=>b.saved_at.localeCompare(a.saved_at));
