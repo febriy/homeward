@@ -10,9 +10,9 @@ Short lessons for everyday family life: learn a small idea, reflect privately, a
 
 Login and profile creation screens are currently bypassed for testing. Existing valid profiles still resume their saved records. The micro-lessons work independently; the original shared workbook still requires two separate profiles for joint approvals.
 
-The home screen offers four **micro-lessons**: conversation patterns, one realistic dinner, the hidden work before cooking, and familiar repeat meals. Read a short lesson, answer three or four personal 1–10 questions (or Not sure), optionally note something to change, then **Save & close**. Drafts autosave; dated records appear in **Your reflections**. There is no overall grade or mandatory task. Read-only use is welcome.
+The home screen is a learning dashboard with **three modules and XP**. Start **Talk without blame**, **Make dinner manageable**, or **Find what matters**. Each module has six small screens: idea, quiz, idea, quiz, personal reflection and optional note. Quizzes explain the answer; personal ratings are not graded. Earn 10 XP once per new step (60 per module), save and leave at any time, and resume where you stopped. Revisiting saves another reflection without duplicating XP.
 
-The earlier dinner practice and its progress remain available to people who already started it. **Values workbook** opens the original couples flow:
+Earlier micro-lessons, reflections and dinner-practice records remain accessible to people who already have them. **Values workbook** opens the original couples flow:
 
 1. Save private reflections using five questions and optional prompts.
 2. Choose up to three values and three feelings, using editable examples or your own words.
@@ -63,6 +63,7 @@ node --check public/app.js
 node --check public/practice.js
 node --check public/skills.js
 node --check public/lessons.js
+node --check public/modules.js
 ```
 
 Python tests require a real PostgreSQL database. They use `HOMEWARD_TEST_DATABASE_URL`, falling back to `DATABASE_URL` from `.env.local`. Each test creates and removes its own randomly named `test_*` schema. Use a dedicated development/test database whose role can create schemas.
@@ -84,6 +85,7 @@ Hosted verification covered health, actual browser account creation/join, privat
 ## Structure and limits
 
 - `core.py`: authenticated session behavior and ownership checks.
+- `modules.py`: three authored learning sequences, checked quizzes, atomic progress and one-time XP.
 - `lessons.py`: authored lesson catalogue, private drafts and dated self-reflection snapshots.
 - `skills.py`: account-scoped dinner skill, atomic versioned saves, private history and opt-in milestones.
 - `db.py`, `schema.sql`: PostgreSQL persistence, transactions and version checks.

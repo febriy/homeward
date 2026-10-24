@@ -296,6 +296,7 @@ class Sessions:
     def view(self, user, session_id=None):
         from skills import read_skill, milestones
         from lessons import LESSONS, read_learning
+        from modules import module_catalog
         session = self.load(user, session_id)
         data = session.pop('data')
         members = self.members(user['room'])
@@ -315,6 +316,7 @@ class Sessions:
         return {'user': user, 'room': room, 'members': members, 'session': session, 'history': history,
                 'skill': skill, 'milestones': shared_milestones,
                 'lessons': LESSONS, 'learning': learning,
+                'modules': module_catalog(),
                 'questions': [{'title': title, 'question': question, 'probe': probe} for title, question, probe in QUESTIONS],
                 'examples': EXAMPLES, 'meals': MEALS}
 
