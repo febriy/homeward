@@ -1,0 +1,55 @@
+.code { overflow-wrap:anywhere; font-size:1.125rem; letter-spacing:.04em; }
+.question-card { padding-block:1rem; }
+.question-card h2 { font-size:1.75rem; line-height:1.25; }
+.topic-nav { display:flex; gap:.5rem; margin-bottom:1.5rem; }
+.topic-button { min-width:44px; min-height:44px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); }
+.topic-button.active { background:var(--green); color:var(--surface); }
+.reflection-help, .word-library { margin-block:1.25rem; }
+summary { cursor:pointer; padding-block:.75rem; min-height:44px; }
+.example-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 1.5rem; }
+.example-word { display:flex; flex-direction:column; gap:.35rem; text-align:left; padding:1rem 0; background:none; color:var(--ink); border:0; border-bottom:1px solid var(--line); cursor:pointer; }
+.example-word strong { font-size:1rem; }
+.example-word span { color:var(--muted); line-height:1.5; font-size:.875rem; }
+.example-word:hover strong { text-decoration:underline; }
+.practice-work { max-width:680px; }
+.practice-work fieldset { border:0; padding:0; margin:1.5rem 0; min-width:0; }
+.practice-work legend { margin-bottom:.8rem; font-weight:600; }
+.practice-vision { margin:1.5rem 0 2rem; font-family:Georgia,serif; font-size:1.5rem; line-height:1.5; }
+.practice-progress { display:flex; list-style:none; gap:4px; margin:1.25rem 0 2rem; padding:0; }
+.practice-progress li { flex:1; min-width:0; border-top:3px solid var(--line); padding-top:.5rem; font-size:.75rem; color:var(--muted); }
+.practice-progress li[aria-current] { border-color:var(--green); color:var(--ink); font-weight:600; }
+.priority-options { display:flex; flex-wrap:wrap; gap:.65rem; }
+.priority-option { display:flex; align-items:center; gap:.6rem; padding:.9rem; min-height:48px; background:var(--surface); border:1px solid var(--control-line); border-radius:8px; cursor:pointer; }
+.priority-option:has(input:checked) { background:var(--selected); border-color:var(--green); }
+.priority-option input, .meal-label input { width:20px; height:20px; min-height:20px; flex-shrink:0; margin:0; }
+.meal-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.9rem; }
+.meal-choice { display:block; overflow:hidden; border:1px solid var(--control-line); border-radius:14px; background:var(--surface); cursor:pointer; }
+.meal-choice img { display:block; width:100%; height:172px; object-fit:contain; background:#fffdf8; }
+.meal-label { display:flex; gap:.65rem; align-items:center; border-top:1px solid var(--line); padding:1rem; min-height:64px; }
+.meal-choice:has(input:checked) { border-color:var(--green); }
+.meal-choice:has(input:checked) .meal-label { background:var(--selected); }
+.meal-choice:has(input:focus-visible) { outline:3px solid var(--focus); outline-offset:3px; }
+.own-meal { margin-top:1rem; }
+.chosen-meal { display:flex; align-items:center; gap:1rem; margin:1.5rem 0; }
+.chosen-meal img { object-fit:contain; border-radius:8px; }
+.plan-summary { margin-block:1.5rem; }
+.plan-summary h2 { font-size:1.75rem; }
+.plan-summary dl { margin:0; }
+.plan-summary dl div { padding:1rem 0; border-top:1px solid var(--line); }
+.plan-summary dt { font-weight:600; margin-bottom:.35rem; }
+.plan-summary dd { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.6; }
+.practice-receipt { background:var(--selected); padding:1rem; border-radius:8px; color:var(--green); font-weight:600; }
+.review-record { margin:1.5rem 0; padding-block:1rem; border-block:1px solid var(--line); }
+.review-record p { white-space:pre-wrap; overflow-wrap:anywhere; }
+.practice-history { margin-top:2rem; }
+.practice-work .intro { margin-top:1.5rem; }
+.practice-work select { max-width:100%; }
+[hidden] { display:none!important; }
+@media(max-width:680px) {
+  .meal-choice img { height:128px; }
+  .meal-grid { gap:.7rem; }
+  .meal-label { padding:.7rem; gap:.45rem; font-size:.875rem; }
+  .example-list { grid-template-columns:1fr; }
+  .question-card h2 { font-size:1.5rem; }
+  .practice-work .intro h1 { font-size:2rem; }
+}

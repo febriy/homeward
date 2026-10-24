@@ -1,0 +1,46 @@
+CREATE TABLE IF NOT EXISTS rooms (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    invite TEXT UNIQUE NOT NULL
+);
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    handle TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    room TEXT NOT NULL REFERENCES rooms(id),
+    salt TEXT NOT NULL,
+    password TEXT NOT NULL,
+    created BIGINT GENERATED ALWAYS AS IDENTITY
+);
+CREATE TABLE IF NOT EXISTS logins (
+    token TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    expires BIGINT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    room TEXT NOT NULL REFERENCES rooms(id),
+    created TEXT NOT NULL,
+    title TEXT NOT NULL,
+    version INTEGER NOT NULL DEFAULT 0,
+    data TEXT NOT NULL,
+    sequence BIGINT GENERATED ALWAYS AS IDENTITY
+);
+CREATE INDEX IF NOT EXISTS sessions_room ON sessions(room, sequence DESC);
+CREATE INDEX IF NOT EXISTS users_room ON users(room);
+CREATE TABLE IF NOT EXISTS rate_limits (
+    key TEXT PRIMARY KEY,
+    hits INTEGER NOT NULL,
+    expires BIGINT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS skills (
+    user_id TEXT PRIMARY KEY REFERENCES users(id),
+    data TEXT NOT NULL
+);
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_guest BOOLEAN NOT NULL DEFAULT FALSE;
+
+CREATE TABLE IF NOT EXISTS learning (
+    user_id TEXT PRIMARY KEY REFERENCES users(id),
+    data TEXT NOT NULL
+);
