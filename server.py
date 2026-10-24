@@ -54,7 +54,7 @@ def make_handler(store, origins=None, hosted=False):
             path = '/api/' + query['route'][0] if 'route' in query else parsed.path
             return path, query
 
-        def respond(self, body, code=200, mime='application/json; charset=utf-8', cookie=None):
+        def respond(self, body, code=200, mime='application/json; charset=utf-8', cookie=None, cookie_age=86400):
             content = body if isinstance(body, bytes) else json.dumps(body, ensure_ascii=False).encode()
             self.send_response(code)
             self.send_header('Content-Type', mime)
@@ -67,7 +67,7 @@ def make_handler(store, origins=None, hosted=False):
                 self.send_header('Retry-After', '900')
             if cookie is not None:
                 self.send_header('Set-Cookie', 'homeward_session=%s; HttpOnly; SameSite=Strict; Path=/; Max-Age=%d%s'
-                                 % (cookie, 86400 if cookie else 0, '; Secure' if hosted else ''))
+                                 % (cookie, cookie_age if cookie else 0, '; Secure' if hosted else ''))
             self.end_headers()
             self.wfile.write(content)
 
@@ -125,7 +125,21 @@ def make_handler(store, origins=None, hosted=False):
                 if not isinstance(body, dict):
                     raise Problem('Expected a JSON object.')
                 path, _ = self.path_parts()
+                if path == '/api/guest':
+                    token = self.token()
+                    try:
+                        user = store.authenticate(token)
+                    except Problem as exc:
+                        if exc.status != 401:
+                            raise
+                        address = self.headers.get('x-vercel-forwarded-for', '') if hosted else self.client_address[0]
+                        store.rate_limit('guest:address:' + address, limit=30, seconds=3600)
+                        token = store.guest()
+                        user = store.authenticate(token)
+                        return self.respond(store.view(user), cookie=token, cookie_age=30 * 86400)
+                    return self.respond(store.view(user))
                 if path in ('/api/register', '/api/login'):
+
                     handle = body.get('handle', '')
                     if not isinstance(handle, str):
                         raise Problem('Enter your username.')

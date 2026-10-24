@@ -358,12 +358,48 @@ class HttpTests(unittest.TestCase):
         code,_,payload=self.request('GET','/api/export',headers={'Cookie':cookie})
         self.assertEqual(code,200);self.assertNotIn('room',json.loads(payload));self.assertIn(b'Private',payload)
 
+    def test_guest_entry_needs_no_credentials_and_keeps_progress_isolated(self):
+        code,headers,body=self.request('POST','/api/guest',{})
+        self.assertEqual(code,200)
+        self.assertIn('HttpOnly',headers['Set-Cookie'])
+        self.assertIn('Max-Age=2592000',headers['Set-Cookie'])
+        state=json.loads(body); cookie=headers['Set-Cookie'].split(';')[0]
+        self.assertTrue(state['user']['is_guest'])
+        profile={'Cookie':cookie,'X-Profile':state['user']['id']}
+        code,_,_=self.request('POST','/api/skill',{'action':'save','version':0,'fields':{'meal_id':'noodle-soup'}},profile)
+        self.assertEqual(code,200)
+        code,_,saved=self.request('GET','/api/state',headers={'Cookie':cookie})
+        self.assertEqual(code,200);self.assertEqual(json.loads(saved)['skill']['meal_id'],'noodle-soup')
+        _,again_headers,again=self.request('POST','/api/guest',{},profile)
+        self.assertEqual(json.loads(again)['user']['id'],state['user']['id'])
+        self.assertNotIn('Set-Cookie',again_headers)
+        _,other_headers,other=self.request('POST','/api/guest',{})
+        other=json.loads(other)
+        self.assertNotEqual(other['user']['id'],state['user']['id'])
+        self.assertEqual(other['skill']['meal_id'],'')
+        other_cookie=other_headers['Set-Cookie'].split(';')[0]
+        self.assertEqual(self.request('GET','/api/state?session='+state['session']['id'],headers={'Cookie':other_cookie})[0],404)
+        self.assertEqual(self.request('POST','/api/skill',{'action':'save','version':0,'fields':{'meal_id':'eggs-toast'}},{'Cookie':other_cookie,'X-Profile':state['user']['id']})[0],409)
+        self.assertEqual(self.request('POST','/api/guest',{}, {'Origin':'https://evil.example'})[0],403)
+
+    def test_guest_entry_preserves_existing_account_and_does_not_recover_it_without_cookie(self):
+        _,headers,body=self.request('POST','/api/register',dict(handle='owner',name='Owner',password=PASSWORD))
+        original=json.loads(body); cookie=headers['Set-Cookie'].split(';')[0]
+        _,_,same=self.request('POST','/api/guest',{}, {'Cookie':cookie})
+        self.assertEqual(json.loads(same)['user']['id'],original['user']['id'])
+        _,_,fresh=self.request('POST','/api/guest',{}, {'Cookie':'homeward_session=invalid'})
+        fresh=json.loads(fresh)
+        self.assertTrue(fresh['user']['is_guest'])
+        self.assertNotEqual(fresh['room']['id'],original['room']['id'])
+
     def test_hosted_cookie_is_secure_and_origin_is_explicit(self):
         secure=ThreadingHTTPServer(('127.0.0.1',0),make_handler(self.store,origins={'https://homeward.example'},hosted=True))
         thread=threading.Thread(target=secure.serve_forever,daemon=True);thread.start()
         original=self.port;self.port=secure.server_port
         try:
             code,headers,_=self.request('POST','/api/register',dict(handle='bruno',name='Bruno',password=PASSWORD),{'Host':'homeward.example','Origin':'https://homeward.example'})
+            self.assertEqual(code,200);self.assertIn('; Secure',headers['Set-Cookie'])
+            code,headers,_=self.request('POST','/api/guest',{}, {'Host':'homeward.example','Origin':'https://homeward.example'})
             self.assertEqual(code,200);self.assertIn('; Secure',headers['Set-Cookie'])
         finally:
             self.port=original;secure.shutdown();secure.server_close();thread.join()

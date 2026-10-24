@@ -67,7 +67,9 @@ async function request(path, body) {
   const data = await response.json();
   if (!response.ok) {
     if (response.status === 401 && state) { state = null; render(); }
-    throw new Error(data.error || 'Unable to continue. Try again.');
+    const error = new Error(data.error || 'Unable to continue. Try again.');
+    error.status=response.status;
+    throw error;
   }
   return data;
 }
@@ -100,7 +102,7 @@ async function go(next) {
 
 function header() {
   const wordmark = '<span class="mark" aria-hidden="true"></span>Homeward';
-  return `<header class="topbar">${state?`<button class="brand" data-route="home" aria-label="Homeward home">${wordmark}</button>`:`<div class="brand">${wordmark}</div>`}<div class="topright">${state ? `<span class="profile-name" title="${esc(state.user.name)}">${esc(state.user.name)}</span><button class="link" data-act="logout">Sign out</button>` : '<span class="hint">Small steps for everyday life</span>'}</div></header>`;
+  return `<header class="topbar">${state?`<button class="brand" data-route="home" aria-label="Homeward home">${wordmark}</button>`:`<div class="brand">${wordmark}</div>`}<div class="topright"><span class="hint">${state?.user.is_guest?'Your browser’s space':'Small steps for everyday life'}</span></div></header>`;
 }
 
 function auth() {
@@ -120,7 +122,7 @@ function intro(kicker, title, detail) {
 function home() {
  const count=Object.values(personal().topics).filter(t=>t.confirmed).length;
  const next=sess().completed?'practice':count===5?'cards':'interview';
- return `${intro('A conversation for two', 'A home that feels<br>like yours.', 'Begin with ordinary moments. Choose what matters, agree on a shared vision, then bring one part of it into everyday life.')}<div class="actions"><button class="btn" data-route="${next}">${sess().completed?'Make our vision practical':count?'Continue my reflection':'Begin my reflection'} ${icons.arrow}</button><span class="hint">At your own pace. Progress is saved.</span></div><div class="grid welcome-cards"><section class="card"><h3>Your own words first.</h3><p class="muted">Five invitations to reflect, with prompts and examples to help you find words that fit.</p><span class="count">${count} of 5 meanings confirmed</span></section><section class="card"><h3>Make room for both.</h3><p class="muted">Share your chosen priorities. Agree on a vision, then try one small practice together.</p><span class="count">${approved().filter(c=>c.kind==='value').length} shared values agreed</span></section></div><section class="note"><h2>${state.members.length<2?'Invite your partner':'Your shared space'}</h2>${state.members.length<2?`<p>Ask your partner to open this app, choose <strong>Join your partner</strong>, and use this space code:</p><span class="code">${esc(state.room.invite)}</span><p class="hint">Your partner creates their own account. Keep this code between you.</p>`:`<p>${state.members.map(m=>esc(m.name)).join(' & ')} have separate private profiles. On a shared browser, sign out before the other person signs in.</p>`}</section>${sess().practice?`<section class="note"><h2>${esc(sess().practice.fields.title||'Our dinner practice')}</h2><p>${esc(sess().practice.fields.meal||'Choose a meal')} · ${esc(sess().practice.status==='active'?'Agreed together':sess().practice.status==='paused'?'Set aside':'In progress')}</p><button class="link" data-route="practice">Open our practice ${icons.arrow}</button></section>`:''}<div class="footer-note">Session started ${friendlyDate(sess().created)} · ${sess().completed?'Statement approved by both partners':'In progress'}</div>`;
+ return `${intro('A conversation for two', 'A home that feels<br>like yours.', 'Begin with ordinary moments. Choose what matters, agree on a shared vision, then bring one part of it into everyday life.')}<div class="actions"><button class="btn" data-route="${next}">${sess().completed?'Make our vision practical':count?'Continue my reflection':'Begin my reflection'} ${icons.arrow}</button><span class="hint">At your own pace. Progress is saved.</span></div><div class="grid welcome-cards"><section class="card"><h3>Your own words first.</h3><p class="muted">Five invitations to reflect, with prompts and examples to help you find words that fit.</p><span class="count">${count} of 5 meanings confirmed</span></section><section class="card"><h3>Make room for both.</h3><p class="muted">Share your chosen priorities. Agree on a vision, then try one small practice together.</p><span class="count">${approved().filter(c=>c.kind==='value').length} shared values agreed</span></section></div><section class="note"><h2>${state.user.is_guest?'Your browser’s space':state.members.length<2?'Invite your partner':'Your shared space'}</h2>${state.user.is_guest?'<p>You can explore your own reflections here. Shared decisions need two separate profiles; this guest space is just for this browser.</p>':state.members.length<2?`<p>Ask your partner to open this app, choose <strong>Join your partner</strong>, and use this space code:</p><span class="code">${esc(state.room.invite)}</span><p class="hint">Your partner creates their own account. Keep this code between you.</p>`:`<p>${state.members.map(m=>esc(m.name)).join(' & ')} have separate private profiles. On a shared browser, sign out before the other person signs in.</p>`}</section>${sess().practice?`<section class="note"><h2>${esc(sess().practice.fields.title||'Our dinner practice')}</h2><p>${esc(sess().practice.fields.meal||'Choose a meal')} · ${esc(sess().practice.status==='active'?'Agreed together':sess().practice.status==='paused'?'Set aside':'In progress')}</p><button class="link" data-route="practice">Open our practice ${icons.arrow}</button></section>`:''}<div class="footer-note">Session started ${friendlyDate(sess().created)} · ${sess().completed?'Statement approved by both partners':'In progress'}</div>`;
 }
 
 function interview() {
@@ -161,7 +163,10 @@ function statement() {
 }
 
 function render() {
-  if (!state) { app.innerHTML=auth(); bind(); return; }
+  if (!state) {
+    app.innerHTML=header()+'<main class="skill-work" id="main-content" tabindex="-1"><h1>Let’s open your space.</h1><p>Your connection may have paused. Try again to continue.</p><button class="btn" id="open-homeward">Try again</button></main>';
+    byId('open-homeward').onclick=openHomeward; return;
+  }
   if(route==='home') { app.innerHTML=header()+skills();bind();bindSkills();return; }
   const pages={workbook:home,interview,cards,share,together,statement,practice};
   const tools=`<details class="mobile-tools"><summary>Saved sessions & export</summary><label class="sr-only" for="mobile-history">Open saved session</label><select id="mobile-history">${state.history.map(item=>`<option value="${esc(item.id)}" ${item.id===sess().id?'selected':''}>${esc(item.title)}</option>`).join('')}</select><div class="actions"><button class="link" data-act="new">New session</button><button class="link" data-act="export">Export my record</button><button class="link" data-act="refresh">Refresh shared work</button></div></details>`;
@@ -239,4 +244,11 @@ async function handle(name) {
   if(labels[name]) return run(labels[name],()=>action(name));
 }
 
-(async()=>{try{state=await request('/api/state');}catch(error){if(!error.message.includes('Sign in'))notify(error.message,true);}render();})();
+async function openHomeward() {
+  app.innerHTML=header()+'<main class="loading" id="main-content" tabindex="-1">Opening your space…</main>';
+  try {
+    state=await request('/api/guest',{});
+    route='home';skillPanel=null;skillPending={};skillError='';render();
+  } catch(error) {state=null;render();notify(error.message,true,true);}
+}
+(async()=>{await openHomeward();})();

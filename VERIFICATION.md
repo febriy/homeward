@@ -69,3 +69,10 @@ Application commit `72a8842fc3f5749e735ae44b2dacb7f05b70ed9f`, deployment `dpl_F
 - Independent finish reviewer scored documentation and final navigation/readiness guards resolved, disposition ship. Existing DESIGN.md and raster provenance were preserved.
 
 Evidence: `.local/verify-mini-hosted.py`, `.impeccable/review/mini/hosted-meals.png`, `hosted-checklist.png`, `small-phone-custom.png`. These contain fictional QA content. No production promotion or PR merge was performed.
+
+
+## Guest entry without login
+
+The interface now opens through a same-origin guest bootstrap, reusing valid existing sessions or creating a separate browser-owned space without credentials. Guest cookies are HttpOnly, SameSite=Strict, Secure on Vercel, and expire after 30 days. Existing account records remain behind their original tokens. Login/profile creation UI is not rendered; guest milestone publication is hidden.
+
+31 PostgreSQL-backed tests and 6 Node tests passed. Added HTTP coverage checks guest creation, repeat bootstrap identity, saved skill recovery, distinct visitor isolation, cross-room reads, profile mismatch rejection, cross-origin rejection, Secure cookies, and existing-account preservation. A fresh local browser origin opened directly to meals, saved a checklist item, and recovered it after reload without signing in. The additive guest metadata migration ran on the preview database before deployment.

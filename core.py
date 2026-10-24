@@ -235,12 +235,24 @@ class Sessions:
             db.execute('INSERT INTO logins VALUES(%s,%s,%s)', (fingerprint(token), user['id'], int(time.time()) + 86400))
         return token
 
+    def guest(self):
+        """An isolated browser-owned space, never a shared public account."""
+        uid, room, token = identifier(), identifier(), secrets.token_urlsafe(32)
+        with self.connect() as db:
+            db.execute('INSERT INTO rooms VALUES(%s,%s,%s)',
+                       (room, 'Our home', secrets.token_hex(12).upper()))
+            db.execute('INSERT INTO users(id,handle,name,room,salt,password,is_guest) VALUES(%s,%s,%s,%s,%s,%s,TRUE)',
+                       (uid, 'guest_' + identifier(), 'Guest', room, secrets.token_hex(16), secrets.token_hex(32)))
+            db.execute('INSERT INTO logins VALUES(%s,%s,%s)',
+                       (fingerprint(token), uid, int(time.time()) + 30 * 86400))
+        return token
+
     def authenticate(self, token):
         with self.connect() as db:
-            row = db.execute('SELECT u.id,u.name,u.room FROM logins l JOIN users u ON u.id=l.user_id '
+            row = db.execute('SELECT u.id,u.name,u.room,u.is_guest FROM logins l JOIN users u ON u.id=l.user_id '
                              'WHERE l.token=%s AND l.expires>%s', (fingerprint(token), int(time.time()))).fetchone()
         if not row:
-            raise Problem('Sign in to your private profile.', 401)
+            raise Problem('Open Homeward again to continue.', 401)
         return dict(row)
 
     def logout(self, token):

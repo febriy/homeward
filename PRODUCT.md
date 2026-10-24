@@ -6,6 +6,8 @@ Homeward helps couples turn clarity about the home they want into everyday pract
 
 ## Intended experience
 
+Login is currently bypassed in the interface. Opening Homeward automatically creates an isolated guest space with a 30-day HttpOnly cookie, or resumes an existing valid profile. Guests can use the dinner skill without credentials; they can explore private workbook reflections, while shared approvals still require two distinct profiles. Existing account data stays protected. Guest milestone sharing is hidden. Clearing cookies or expiry starts a fresh guest space; there is no cross-device guest recovery.
+
 The default home is one autonomous micro-skill: make a dependable dinner. Choose a pictured meal or name a familiar one, check ingredients/time/help, leave to try it, then return for a private confidence self-check and optional note. Readiness and reflection drafts autosave to the profile; failed saves remain in memory for retry and navigation waits for saves. Full-page departure warns while unsaved. Completed attempts earn 10 XP each, with confidence recorded separately as self-assessment. Repeating keeps history and starts a fresh checklist. Personal progress survives new workbook sessions.
 
 Milestone sharing is deliberate. The partner sees only the person's name and “Practised a dependable dinner”; meal, notes, confidence, history and XP remain private. Sharing can be withdrawn. There is one module, no skill catalogue or avatar system yet. The original workbook remains available through “Our values workbook.”

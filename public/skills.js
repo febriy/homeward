@@ -8,6 +8,7 @@ let skillWorking = false;
 const confidenceLabels = {help:'Need more help', practising:'Getting there', comfortable:'Comfortable'};
 const skillData = () => ({...state.skill, ...skillPending});
 
+function skillSavedLabel() { return state?.user.is_guest ? 'Saved for this browser · No account needed' : 'Saved to your private profile'; }
 function skillStatus(message) {
   const node = byId('skill-save');
   if(node) node.textContent = message;
@@ -34,7 +35,7 @@ async function flushSkill() {
       if(state?.user.id !== owner) return;
       state.skill = result.skill; state.milestones = result.milestones;
       skillError = '';
-      skillStatus(Object.keys(skillPending).length ? 'Saving…' : 'Saved to your private profile');
+      skillStatus(Object.keys(skillPending).length ? 'Saving…' : skillSavedLabel());
     } catch(error) {
       if(state?.user.id !== owner) {skillPending={};skillError='';throw error;}
       skillPending = {...fields, ...skillPending};
@@ -57,7 +58,7 @@ function skillButton(label, action, disabled=false) {
   return `<button class="btn" data-skill-action="${action}" ${disabled?'disabled':''}>${label} ${icons.arrow}</button>`;
 }
 function skillFooter() {
-  return `<footer class="skill-footer"><p id="skill-save" role="status">${skillError?esc('Not saved. '+skillError):skillSaving||Object.keys(skillPending).length?'Saving…':'Saved to your private profile'}</p><button class="link" id="skill-retry" ${skillError?'':'hidden'}>Retry saving</button><nav aria-label="More from Homeward"><button class="link" data-skill-panel="progress">My progress</button><button class="link" data-route="workbook">Our values workbook</button></nav></footer>`;
+  return `<footer class="skill-footer">${state.user.is_guest?'<p>This browser remembers your space for up to 30 days. Clearing cookies starts a new one.</p>':''}<p id="skill-save" role="status">${skillError?esc('Not saved. '+skillError):skillSaving||Object.keys(skillPending).length?'Saving…':skillSavedLabel()}</p><button class="link" id="skill-retry" ${skillError?'':'hidden'}>Retry saving</button><nav aria-label="More from Homeward"><button class="link" data-skill-panel="progress">My progress</button><button class="link" data-route="workbook">Our values workbook</button></nav></footer>`;
 }
 function skills() {
   const s=skillData();
@@ -73,7 +74,7 @@ function skills() {
     body=`<h1>How did it go?</h1><p class="skill-lead">Think about making ${esc(s.meal.toLowerCase())} again. How do you feel?</p><form id="skill-review-form"><fieldset class="skill-confidence"><legend class="sr-only">Your confidence</legend>${Object.entries(confidenceLabels).map(([id,label])=>`<label class="priority-option"><input type="radio" name="skill-confidence" value="${id}" ${s.confidence===id?'checked':''} required><span>${label}</span></label>`).join('')}</fieldset><details class="skill-note" ${s.note?'open':''}><summary>Add a note for next time <span class="hint">Optional</span></summary><label for="skill-note">What would help next time?</label><textarea id="skill-note" maxlength="600" placeholder="One small thing you noticed…">${esc(s.note)}</textarea></details><button class="btn" type="submit">Save progress ${icons.arrow}</button></form><p class="skill-aside">Your self-check and notes stay private.</p>`;
   } else if(panel==='complete') {
     const first=s.history.length===1;
-    body=`<div class="skill-receipt">${icons.check}<span>+10 XP · Practice recorded</span></div><h1>${first?'Your first dinner,<br>practised.':'Another dinner,<br>practised.'}</h1><p class="skill-lead">${s.confidence==='help'?'You gave it a go. Next time, keep the meal simple or ask someone to cook alongside you.':s.confidence==='practising'?'It’s becoming more familiar. Try the same meal again when it suits you.':'You’re feeling comfortable. Keep this meal in your everyday collection.'}</p>${skillMeal(s)}<p>You’re done for now.</p>${skillButton('Try it again','repeat')}<details class="skill-sharing"><summary>Share a milestone with our home</summary><p>Your partner would see only: <strong>“${esc(state.user.name)} practised a dependable dinner.”</strong> Your notes, confidence and XP stay private.</p><button class="btn secondary" data-skill-action="${s.shared?'unshare':'share'}">${s.shared?'Remove shared milestone':'Share this milestone'}</button></details>`;
+    body=`<div class="skill-receipt">${icons.check}<span>+10 XP · Practice recorded</span></div><h1>${first?'Your first dinner,<br>practised.':'Another dinner,<br>practised.'}</h1><p class="skill-lead">${s.confidence==='help'?'You gave it a go. Next time, keep the meal simple or ask someone to cook alongside you.':s.confidence==='practising'?'It’s becoming more familiar. Try the same meal again when it suits you.':'You’re feeling comfortable. Keep this meal in your everyday collection.'}</p>${skillMeal(s)}<p>You’re done for now.</p>${skillButton('Try it again','repeat')}${state.user.is_guest?'':`<details class="skill-sharing"><summary>Share a milestone with our home</summary><p>Your partner would see only: <strong>“${esc(state.user.name)} practised a dependable dinner.”</strong> Your notes, confidence and XP stay private.</p><button class="btn secondary" data-skill-action="${s.shared?'unshare':'share'}">${s.shared?'Remove shared milestone':'Share this milestone'}</button></details>`}`;
   } else if(panel==='progress') {
     const latest=s.history.at(-1);
     body=`<button class="link skill-back" data-skill-panel="resume">Back to my practice</button><h1>Little by little.</h1><p class="skill-lead">Your experience grows each time you try and check in.</p><div class="skill-progress-line"><strong>${s.xp} XP</strong><span>${s.history.length} dinner ${s.history.length===1?'practice':'practices'}</span></div><p class="hint">10 XP for each practice and self-check. Confidence is your own assessment.</p><section class="skill-record"><h2>A dependable dinner</h2><p>${latest?esc(confidenceLabels[latest.confidence]):'Your first practice is waiting.'}</p>${skillButton(s.stage==='complete'?'Try it again':'Continue my practice',s.stage==='complete'?'repeat':'resume')}</section>${s.history.length?`<details><summary>My earlier practices</summary>${s.history.slice().reverse().map(r=>`<article class="skill-record"><h3>${esc(r.meal)}</h3><p class="hint">${friendlyDate(r.saved_at)} · ${esc(confidenceLabels[r.confidence])}</p>${r.note?`<p class="skill-personal-note">${esc(r.note)}</p>`:''}</article>`).join('')}</details>`:''}<section class="skill-household"><h2>Our home’s milestones</h2>${state.milestones.length?state.milestones.map(m=>`<p>${esc(m.name)} practised a dependable dinner.</p>`).join(''):'<p class="hint">Milestones appear here only when someone chooses to share them.</p>'}</section>`;

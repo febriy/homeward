@@ -6,9 +6,9 @@ A working, guided workbook for couples: reflect privately, choose values and des
 
 ## Try it
 
-[Open the hosted preview](https://homeward-git-feat-no-ai-workbook-arvins-projects-318f977d.vercel.app). The preview is publicly accessible without a Vercel account. Create a Homeward profile to save private work. This preview uses a dedicated Neon database in Singapore on its Free plan.
+[Open the hosted preview](https://homeward-git-feat-no-ai-workbook-arvins-projects-318f977d.vercel.app). The preview is publicly accessible without a Vercel account. No login is needed: a separate guest space opens automatically and saves progress for this browser. Guest access lasts up to 30 days; clearing cookies starts a fresh space. This preview uses a dedicated Neon database in Singapore on its Free plan.
 
-Create your own profile and space. Give your partner the space code; they choose **Join your partner** and create a separate account. On a shared browser, sign out between people.
+Login and profile creation screens are currently bypassed for testing. Existing valid profiles still resume their saved records. The dinner skill works independently; the original shared workbook still requires two separate profiles for joint approvals.
 
 The home screen now starts with **Make one dependable dinner**. Choose a pictured meal, complete three readiness checks, try it, and return for a private self-check. It works without a partner or a completed vision. Progress autosaves, each completed attempt earns 10 XP, and “My progress” keeps earlier attempts. You can explicitly share a milestone with your household; your notes, confidence and XP stay private. “Our values workbook” opens the original flow below.
 
