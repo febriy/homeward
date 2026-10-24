@@ -109,3 +109,11 @@ Evidence is under `.impeccable/review/modules/`: dashboards at 1440 px, the actu
 `DESIGN.md` remains unchanged and `.impeccable/design.json` remains absent. Pre-existing drift remains explicit: the document names `web/style.css` instead of `public/style.css`, describes four-item phone navigation while the workbook has five items, and lacks token frontmatter and a sidecar. The earlier text check glyph is not promoted into a new icon rule. This ordinary extension neither repairs those unrelated items nor canonizes them as guidance.
 
 These results cover local automated checks and browser viewports, not physical-device or comprehensive assistive-technology testing. Hosted verification of this dashboard/module slice remains pending; earlier hosted evidence above concerns earlier releases.
+
+## Learning dashboard and modules: hosted verification
+
+Application commit `f7c5fc6a27cd1139f0a8bb4e50d8d532ce3413a8` deployed READY as `dpl_57dDRegUs5a6P2gJUXtTBgFHFB3g` in Singapore. Exact deployment: https://homeward-8z1j2kbqy-arvins-projects-318f977d.vercel.app. The existing public branch alias was updated. No production promotion, merge or new schema migration occurred.
+
+The fictional-guest script `.local/verify-modules-hosted.py` passed all three modules and eighteen steps on the stable branch URL: wrong/correct feedback, partial draft recovery, 1/10 and Not sure reflections, blank and filled optional notes, retry idempotency, 180 XP, replay without duplicate XP, preservation of earlier lesson records, export and separate-guest isolation. Mismatched profiles returned 409; cookie-free private reads returned 401.
+
+A separate fresh browser guest on the exact deployment opened without login, completed the dinner module, reloaded midway and resumed with the checked answer and feedback retained. Not sure plus a blank optional note completed with 60 XP. Reloading again and opening Your reflections recovered the same dated record. Browser console had no warnings or errors. `hosted-record.png` and `hosted-dashboard.png` under `.impeccable/review/modules/` were captured, opened and visually inspected. The stable preview dashboard was refreshed and left ready to try; earlier profile records remained available. The local evidence and physical-device/accessibility limits above still apply.
