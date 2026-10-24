@@ -133,3 +133,11 @@ The source and sampled renders preserve paper and forest colors, Georgia heading
 `DESIGN.md` remains unchanged and `.impeccable/design.json` remains absent: this is an ordinary extension without an approved system change. Pre-existing documentation drift remains recorded, not repaired or canonized: DESIGN.md names `web/style.css` instead of `public/style.css`, describes four-item phone navigation while the original workbook has five items, and lacks normative token frontmatter and a sidecar. The previously recorded text check glyph is likewise not promoted into icon guidance.
 
 These results cover local tests and browser viewport evidence, not physical-device or comprehensive assistive-technology testing. Hosted verification of this Practices slice remains pending; earlier hosted results concern earlier releases.
+
+## Concrete practices: hosted verification
+
+Application commit `131e17d9737e49b76c75981a6f5fe00f7d64123d` deployed READY as `dpl_H84YwDJyBZkkiKWbSwSdLaTxoPg5`, Singapore, on the existing public preview. Exact deployment: https://homeward-291ms91hv-arvins-projects-318f977d.vercel.app. No production promotion, PR merge or schema migration occurred.
+
+The fictional-guest script `.local/verify-practices-hosted.py` passed both practices: action/cue saves and resume, planning without awards, not-yet without awards, first imperfect attempt earning 20 XP, repeat attempts earning no additional XP, immutable dated snapshots, idempotent retries, preserved lesson state, export and isolated guests. Profile mismatch returned 409 and cookie-free private reads returned 401.
+
+A fresh browser guest on the exact deployment saved a dinner check-in action and cue, reloaded and reopened the matching ready plan. A fictional imperfect attempt with a blank optional note earned 20 XP. Reloading and opening My practice records recovered the same action, cue and outcome. Browser console showed no warnings or errors. Captures `hosted-plan.png` and `hosted-practices.png` in `.impeccable/review/activities/` were opened and visually verified. The stable preview was left on Practices for the user. This supplements the local evidence above and does not extend its physical-device or assistive-technology coverage.
