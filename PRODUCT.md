@@ -21,7 +21,7 @@ From the shared statement, they choose one value to practise over dinner. A pict
 
 ## Scope and delivery status
 
-The local application has passed database-backed tests and a fictional two-account browser journey through a completed weekly review. A Vercel preview now uses a dedicated Neon database and has passed hosted account, privacy, persistence and approval checks. Deployment Protection remains enabled, and the pull request is unmerged. Production has not been released.
+The local application has passed database-backed tests and a fictional two-account browser journey through a completed weekly review. A Vercel preview now uses a dedicated Neon database and has passed hosted account, privacy, persistence and approval checks. The preview is publicly accessible at the owner’s request, while private work requires a Homeward profile. The pull request is unmerged. Production has not been released.
 
 Account recovery, email verification, automatic reminders, payments, subscriptions, voice and broader routines/skills are outside this slice. The current private data boundary is enforced by application access controls; it is not end-to-end encryption.
 

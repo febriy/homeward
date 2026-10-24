@@ -29,7 +29,7 @@ Source sampling also found a pre-existing text check glyph in the reflection que
 
 ## Hosted preview verification
 
-Deployed from `feat/no-ai-workbook` to Vercel project `homeward` in `arvins-projects-318f977d`, using a dedicated Neon Free database named `homeward-preview`. Function and database are in Singapore. Deployment Protection remains enabled. No production release or PR merge has happened.
+Deployed from `feat/no-ai-workbook` to Vercel project `homeward` in `arvins-projects-318f977d`, using a dedicated Neon Free database named `homeward-preview`. Function and database are in Singapore. The owner requested public access, so the Vercel sign-in gate is disabled for Homeward. No production release or PR merge has happened.
 
 Verified application commit: `766d49b`. Deployment: `dpl_5KvieBGbCNLMLYytKtFdjcrp3YG1`, READY. Exact tested URL: https://homeward-qc20dhlie-arvins-projects-318f977d.vercel.app. Stable branch URL: https://homeward-git-feat-no-ai-workbook-arvins-projects-318f977d.vercel.app.
 
@@ -42,3 +42,7 @@ Verified application commit: `766d49b`. Deployment: `dpl_5KvieBGbCNLMLYytKtFdjcr
 - The deployment uses live hosted persistence, with fictional QA data only. No original workbook records or local user records were uploaded.
 
 Evidence: ignored `.local/hosted-results.txt`, `.local/deployment-tests.txt` and `.impeccable/review/hosted-plan.png`. Hosted checks supplement the earlier local browser walkthrough; they are not a load test or public-launch readiness certification.
+
+## Public access check
+
+At the owner’s explicit request, Vercel Deployment Protection was disabled for this Homeward project. Fresh HTTP requests with no cookies or authorization headers returned 200 for the public page and `/api/health`, while `/api/state` returned 401 requiring a Homeward profile. The browser opened the stable branch URL to the first-run form. Screenshot: `.impeccable/review/public-homeward.png`.

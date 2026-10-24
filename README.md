@@ -6,7 +6,7 @@ A working, guided workbook for couples: reflect privately, choose values and des
 
 ## Try it
 
-[Open the hosted preview](https://homeward-git-feat-no-ai-workbook-arvins-projects-318f977d.vercel.app). Vercel Deployment Protection remains enabled; use the owner’s Vercel account if prompted. This preview uses a dedicated Neon database in Singapore on its Free plan.
+[Open the hosted preview](https://homeward-git-feat-no-ai-workbook-arvins-projects-318f977d.vercel.app). The preview is publicly accessible without a Vercel account. Create a Homeward profile to save private work. This preview uses a dedicated Neon database in Singapore on its Free plan.
 
 Create your own profile and space. Give your partner the space code; they choose **Join your partner** and create a separate account. On a shared browser, sign out between people.
 
